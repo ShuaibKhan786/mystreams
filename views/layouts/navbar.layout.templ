@@ -1,0 +1,94 @@
+package layouts
+
+import (
+	button "github.com/ShuaibKhan786/mystreams/views/components/button"
+	navbar "github.com/ShuaibKhan786/mystreams/views/components/navbar"
+)
+
+// make sure sidebarOpenDesktop
+// is declared in the parent div
+templ LayoutNavbar(currentNav ...string) {
+	{{
+	var cv string
+	if len(currentNav) > 0 {
+		cv = currentNav[0]
+	}
+	}}
+	@navbar.Navbar(navbar.NavbarProps{
+		Class: " px-3 py-2",
+	}) {
+		// desktop toggle
+		<div class="flex gap-3 items-center">
+			@button.Button(button.Props{
+				Size:  button.Medium,
+				Icon:  "fa-solid fa-bars-staggered",
+				Class: "hidden md:inline-flex",
+				Attributes: templ.Attributes{
+					"@click": "sidebarOpenDesktop = !sidebarOpenDesktop; console.log('Desktop'+sidebarOpenDesktop)",
+				},
+			})
+			if cv != "" {
+				<div class="px-2 lg:px-0 font-semibold">{ cv }</div>
+			}
+		</div>
+		@button.Button(button.Props{
+			Size: button.Medium,
+			Icon: "fa-solid fa-right-to-bracket",
+		})
+	}
+}
+
+// the parent container must add
+// "flex lg:hidden" breakpoints for
+// mobile layout
+templ LayoutNavbarMobile() {
+	@navbar.Navbar(navbar.NavbarProps{
+		Class: " px-4 py-1",
+	}) {
+		@navbar.NavbarItem(navbar.ItemProps{
+			Class: " text-xs",
+			Label: "Home",
+			Icon:  "fa-solid fa-house text-base md:text-sm",
+			Attributes: templ.Attributes{
+				"hx-get":      "/home?partial=true",
+				"href":        "/home?partial=true",
+				"hx-push-url": "/home",
+				"hx-target":   "#main-container",
+				"hx-swap":     "innerHTML",
+			},
+		})
+		@navbar.NavbarItem(navbar.ItemProps{
+			Label: "Movies",
+			Icon:  "fa-solid fa-video text-base md:text-sm",
+			Attributes: templ.Attributes{
+				"hx-get":      "/movies?partial=true",
+				"href":        "/movies?partial=true",
+				"hx-push-url": "/movies",
+				"hx-target":   "#main-container",
+				"hx-swap":     "innerHTML",
+			},
+		})
+		@navbar.NavbarItem(navbar.ItemProps{
+			Label: "Shows",
+			Icon:  "fa-solid fa-tv text-base md:text-sm",
+			Attributes: templ.Attributes{
+				"hx-get":      "/shows?partial=true",
+				"href":        "/shows?partial=true",
+				"hx-push-url": "/shows",
+				"hx-target":   "#main-container",
+				"hx-swap":     "innerHTML",
+			},
+		})
+		@navbar.NavbarItem(navbar.ItemProps{
+			Label: "Profile",
+			Icon:  "fa-solid fa-user text-base md:text-sm",
+			Attributes: templ.Attributes{
+				"hx-get":      "/profile?partial=true",
+				"href":        "/profile?partial=true",
+				"hx-push-url": "/profile",
+				"hx-target":   "#main-container",
+				"hx-swap":     "innerHTML",
+			},
+		})
+	}
+}

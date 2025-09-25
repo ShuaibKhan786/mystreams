@@ -1,0 +1,58 @@
+package input
+
+type Props struct {
+	Class       string
+	Icon        string
+	Name        string
+	Type        string
+	Value       string
+	Placeholder string
+	Attributes  templ.Attributes
+}
+
+templ Input(props ...Props) {
+	{{ var p Props }}
+	{{
+	if len(props) > 0 {
+		p = props[0]
+	}
+	style :=`
+	flex gap-2 items-center px-3 py-1.5 rounded-lg border 
+	border-[#e5e5e5] dark:border-[#ffffff1a] 
+	focus-within:border-[#a1a1aa] dark:focus-within:border-[#a9a9ac]
+	focus-within:ring-2 focus-within:ring-[#a1a1aa]/40 dark:focus-within:ring-[#d4d4d8]/40
+	` 
+
+
+	if p.Icon != "" {
+		style += "flex gap-3 items-center "
+	}
+	style += p.Class
+	}}
+	if p.Icon != "" {
+		<div
+			x-data
+			@click="$el.querySelector('input').focus()"
+			class={ style }
+		>
+			<span class={ p.Icon }></span>
+			<input
+				name={ p.Name }
+				type={ p.Type }
+				value={ p.Value }
+				placeholder={ p.Placeholder }
+				{ p.Attributes... }
+				class="outline-none border-none"
+			/>
+		</div>
+	} else {
+		<input
+			name={ p.Name }
+			type={ p.Type }
+			value={ p.Value }
+			placeholder={ p.Placeholder }
+			{ p.Attributes... }
+			class={ "outline-none " + style }
+		/>
+	}
+}

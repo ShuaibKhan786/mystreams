@@ -1,0 +1,56 @@
+package modal
+
+import "github.com/ShuaibKhan786/mystreams/views/components/button"
+
+type Props struct {
+	Title      string
+	Class      string
+	Attributes templ.Attributes
+}
+
+// button component dependancy
+templ Modal(props ...Props) {
+	{{
+	var p Props
+	if len(props) > 0 {
+		p = props[0]
+	}
+	style := `
+        max-w-11/12 max-h-[90vh] p-3 lg:p-4
+        overflow-hidden
+		flex flex-col gap-3 items-center justify-center
+        bg-white dark:bg-[#0a0a0a] 
+        rounded-xl border border-[#e5e7eb] dark:border-none 
+		shadow-sm dark:shadow-none 
+		`
+	style += p.Class
+	}}
+	<div
+		id="modal-container"
+		x-data
+		@click.self="$root.remove()"
+		class="fixed inset-0 z-40 bg-white/65 dark:bg-black/65 flex justify-center items-center"
+		{ p.Attributes... }
+	>
+		<div class={ style }>
+			// modal header
+			<div class="w-full flex items-center justify-between gap-3">
+				if p.Title != "" {
+					<span class="px-2 text-lg font-semibold">{ p.Title }</span>
+				}
+				@button.Button(button.Props{
+					Size:  button.None,
+					Class: " ml-auto px-3 py-2.5 !rounded-full",
+					Icon:  "fa-solid fa-xmark",
+					Attributes: templ.Attributes{
+						"@click": "$root.remove()",
+					},
+				})
+			</div>
+			// modal contents
+			<div class="overflow-y-auto">
+				{ children... }
+			</div>
+		</div>
+	</div>
+}

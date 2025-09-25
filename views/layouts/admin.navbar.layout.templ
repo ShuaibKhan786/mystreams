@@ -1,0 +1,36 @@
+package layouts
+
+import "github.com/ShuaibKhan786/mystreams/views/components/navbar"
+import "github.com/ShuaibKhan786/mystreams/views/components/button"
+
+// make sure sidebarOpenDesktop
+// is declared in the parent div
+templ AdminLayoutNavbar(currentNav ...string) {
+	{{
+	var cv string
+	if len(currentNav) > 0 {
+		cv = currentNav[0]
+	}
+	}}
+	@navbar.Navbar(navbar.NavbarProps{
+		Class: " px-3 py-2",
+	}) {
+		// desktop toggle
+		<div class="flex gap-3 items-center">
+			@button.Button(button.Props{
+				Size:  button.Medium,
+				Icon:  "fa-solid fa-bars-staggered",
+				Attributes: templ.Attributes{
+					"@click": "sidebarOpenDesktop = !sidebarOpenDesktop; console.log('Desktop'+sidebarOpenDesktop)",
+				},
+			})
+			if cv != "" {
+				<div class="px-2 lg:px-0 font-semibold">{ cv }</div>
+			}
+		</div>
+		@button.Button(button.Props{
+			Size: button.Medium,
+			Icon: "fa-solid fa-right-to-bracket",
+		})
+	}
+}

@@ -1,0 +1,37 @@
+package accordion
+
+type Props struct {
+	ID         string
+	Label      string
+	Class      string
+	Attributes templ.Attributes
+}
+
+templ Accordion(props ...Props) {
+	{{
+	var p Props
+	if len(props) > 0 {
+		p = props[0]
+	}
+	style := "px-2 py-1.5"
+	style += p.Class
+	}}
+	<div
+		x-data="{ isAccordionOpen: false }"
+	>
+		<div class="px-3 py-1.5 flex items-center justify-between gap-2 ">
+			<span>{ p.Label }</span>
+			<span 
+                @click="isAccordionOpen = !isAccordionOpen"
+                class="cursor-pointer"
+                :class="isAccordionOpen ? 'ml-auto fa-solid fa-angle-down fa-sm' : 'ml-auto fa-solid fa-angle-left fa-sm'"
+            ></span>
+		</div>
+		<div
+			x-show="isAccordionOpen"
+			class={ style }
+		>
+			{ children... }
+		</div>
+	</div>
+}

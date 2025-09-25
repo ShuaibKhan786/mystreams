@@ -1,0 +1,56 @@
+package layouts
+
+import (
+	"github.com/ShuaibKhan786/mystreams/views/components/button"
+	"github.com/ShuaibKhan786/mystreams/views/components/input"
+	"github.com/ShuaibKhan786/mystreams/views/components/modal"
+)
+
+templ AdminGenreLayout() {
+	@AdminDefaultContentLayout("Genres") {
+		<section class="flex gap-3">
+			@button.Button(button.Props{
+				Size:    button.Medium,
+				Outline: true,
+				Class:   " ml-auto",
+				Icon:    "fa-solid fa-plus text-sm",
+				Attributes: templ.Attributes{
+					"hx-get":    "/admin/genres/new",
+					"hx-target": "body",
+					"hx-swap":   "beforeend",
+				},
+			}) {
+				Create 
+			}
+		</section>
+	}
+}
+
+templ AdminGenreCreateLayout() {
+	@modal.Modal(modal.Props{
+		Title: "Create Person",
+	}) {
+		// add necessary things like table refresh and so on		
+		<form
+			hx-post="/admin/genres"
+			hx-target="this"
+			hx-swap="none"
+			class="px-2 py-10 flex flex-col gap-3"
+		>
+			@input.Input(input.Props{
+				Name: "name", Type: "text", Placeholder: "eg: action, comedy, drama", Class: "w-70",
+			})
+			@button.Button(button.Props{
+				Class:   " ml-auto",
+				Outline: true,
+				Size:    button.Small,
+				Icon:    "fa-solid fa-plus fa-sm",
+				Attributes: templ.Attributes{
+					"type": "submit",
+				},
+			}) {
+				Create 
+			}
+		</form>
+	}
+}

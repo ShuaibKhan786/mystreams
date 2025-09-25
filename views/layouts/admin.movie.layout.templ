@@ -1,0 +1,215 @@
+package layouts
+
+import (
+	"github.com/ShuaibKhan786/mystreams/views/components/button"
+	"github.com/ShuaibKhan786/mystreams/views/components/card"
+	"github.com/ShuaibKhan786/mystreams/views/components/dropdown"
+	"github.com/ShuaibKhan786/mystreams/views/components/input"
+	"github.com/ShuaibKhan786/mystreams/views/components/label"
+	"github.com/ShuaibKhan786/mystreams/views/components/navbar"
+	"github.com/ShuaibKhan786/mystreams/views/components/table"
+)
+
+templ AdminMovieLayout() {
+	@AdminDefaultContentLayout("Movies") {
+		<section class="flex gap-3">
+			@button.Button(button.Props{
+				Size:    button.Medium,
+				Outline: true,
+				Class:   " ml-auto",
+				Icon:    "fa-solid fa-plus text-sm",
+				Attributes: templ.Attributes{
+					"hx-get":      "/admin/movies/new?partial=true",
+					"hx-push-url": "/admin/movies/new",
+					"hx-target":   "#main-container",
+					"hx-swap":     "innerHTML",
+				},
+			}) {
+				Create 
+			}
+		</section>
+	}
+}
+
+templ AdminMovieCreateLayout() {
+	@card.Card(card.Props{
+		Class: "w-full h-full bg-white dark:bg-[#0a0a0a]",
+	}) {
+		@card.CardHeaderWrapper() {
+			@navbar.Navbar(navbar.NavbarProps{
+				Class: " px-3 py-2",
+			}) {
+				<div class="flex gap-3 items-center">
+					@button.Button(button.Props{
+						Size: button.Medium,
+						Icon: "fa-solid fa-angle-left text-base",
+						Attributes: templ.Attributes{
+							"hx-get":      "/admin/movies?partial=true",
+							"hx-push-url": "/admin/movies",
+							"hx-target":   "#main-container",
+							"hx-swap":     "innerHTML",
+						},
+					})
+					<div class="px-2 lg:px-0 font-semibold">Create Movie</div>
+				</div>
+			}
+		}
+		@card.CardContentWrapper(card.ContentProps{
+			Class: " flex-1 overflow-y-auto p-4 flex flex-col gap-3",
+		}) {
+			<form
+				x-data="{
+						roles: [], 
+						name: '', role_type: '', character: '',
+					}"
+				@update-person.window="name = $event.detail"
+				@update-role-type.window="role_type = $event.detail"
+				hx-post="/admin/movies"
+				hx-target="this"
+				hx-swap="none"
+				:hx-vals="JSON.stringify({json_data: { roles: roles}})"
+				class="flex flex-col gap-3"
+			>
+				// movie section
+				<section class="flex flex-col gap-3">
+					<h2 class="text-base font-semibold">Movie</h2>
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+						@label.Label(label.Props{Label: "Title"}) {
+							@input.Input(input.Props{
+								Name: "title", Type: "text", Placeholder: "eg: Interstellar, Oppenheimer",
+							})
+						}
+						@label.Label(label.Props{Label: "Description"}) {
+							@input.Input(input.Props{
+								Name: "description", Type: "text", Placeholder: "movie description",
+							})
+						}
+						@label.Label(label.Props{Label: "Release Year"}) {
+							// decide wether you would take full date or time or so
+							@input.Input(input.Props{
+								Name: "year", Type: "text", Placeholder: "eg: 2025, 2028",
+							})
+						}
+						@label.Label(label.Props{Label: "Quality"}) {
+							@dropdown.Dropdown(dropdown.Props{
+								Name: "quality", Label: "Quality",
+							}) {
+								@dropdown.DropdownItem(dropdown.ItemProps{Label: "HD", Value: "hd"})
+								@dropdown.DropdownItem(dropdown.ItemProps{Label: "CAM", Value: "cam"})
+							}
+						}
+						@label.Label(label.Props{Label: "Runtime in minutes"}) {
+							@input.Input(input.Props{
+								Name: "runtime", Type: "text", Placeholder: "eg: 198m, 123m",
+							})
+						}
+						@label.Label(label.Props{Label: "County"}) {
+							@input.Input(input.Props{
+								Name: "country", Type: "text", Placeholder: "eg: USA, India",
+							})
+						}
+					</div>
+				</section>
+				// role, person section
+				// think a way to hijack request to embed roles
+				<section class="flex flex-col gap-3">
+					<h2 class="text-base font-semibold">Movie Role</h2>
+					<div class="grid items-end grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+						@label.Label(label.Props{Label: "Person"}) {
+							@dropdown.Dropdown(dropdown.Props{
+								Label: "Choose person",
+							}) {
+								// paginated result
+								@dropdown.DropdownItem(dropdown.ItemProps{Label: "Cast", Value: "cast", Bind: "person", Selected: true})
+								@dropdown.DropdownItem(dropdown.ItemProps{Label: "Director", Value: "director", Bind: "person"})
+								@dropdown.DropdownItem(dropdown.ItemProps{Label: "Producer", Value: "producer", Bind: "person"})
+								@dropdown.DropdownItem(dropdown.ItemProps{Label: "Writer", Value: "writer", Bind: "person"})
+								@dropdown.DropdownItem(dropdown.ItemProps{Label: "Crew", Value: "crew", Bind: "person"})
+							}
+						}
+						@label.Label(label.Props{Label: "Role Type"}) {
+							@dropdown.Dropdown(dropdown.Props{
+								Label: "Choose role type",
+							}) {
+								@dropdown.DropdownItem(dropdown.ItemProps{Label: "Cast", Value: "cast", Bind: "role-type"})
+								@dropdown.DropdownItem(dropdown.ItemProps{Label: "Director", Value: "director", Bind: "role-type"})
+								@dropdown.DropdownItem(dropdown.ItemProps{Label: "Producer", Value: "producer", Bind: "role-type"})
+								@dropdown.DropdownItem(dropdown.ItemProps{Label: "Writer", Value: "writer", Bind: "role-type"})
+								@dropdown.DropdownItem(dropdown.ItemProps{Label: "Crew", Value: "crew", Bind: "role-type"})
+							}
+						}
+						@label.Label(label.Props{Label: "Character"}) {
+							@input.Input(input.Props{
+								Type: "text", Placeholder: "eg: Ironman, Superman",
+								Attributes: templ.Attributes{
+									"x-model": "character",
+								},
+							})
+						}
+						@button.Button(button.Props{
+							Outline: true,
+							Size:    button.Small,
+							Class:   " ml-auto",
+							Icon:    "fa-solid fa-plus text-sm",
+							Attributes: templ.Attributes{
+								"type":   "button",
+								"@click": `if (name !== "" && role_type !== "") { roles.push({ name, role_type, character });}`,
+							},
+						}) {
+							Add role 
+						}
+					</div>
+					<template x-if="roles.length">
+						@table.Table() {
+							@table.TableHeader() {
+								@table.TableHead() {
+									Person 
+								}
+								@table.TableHead() {
+									Producer 
+								}
+								@table.TableHead() {
+									Superman 
+								}
+								@table.TableHead() {
+									Action 
+								}
+							}
+							@table.TableBody() {
+								<template x-for="(r, index) in [...roles].slice().reverse()" :key="index">
+									@table.TableRow() {
+										@table.TableCell() {
+											<span x-text="r.name"></span>
+										}
+										@table.TableCell() {
+											<span x-text="r.role_type"></span>
+										}
+										@table.TableCell() {
+											<span x-text="r.character"></span>
+										}
+										@table.TableCell() {
+											@button.Button(button.Props{
+												Icon:  "fa-solid fa-trash",
+												Size:  button.None,
+												Class: " p-2",
+												Attributes: templ.Attributes{
+													"type":   "button",
+													"@click": "roles.splice((roles.length-index-1), 1)",
+												},
+											})
+										}
+									}
+								</template>
+							}
+						}
+					</template>
+				</section>
+				@button.Button(button.Props{
+					Attributes: templ.Attributes{"type": "submit"},
+				}) {
+					Submit
+				}
+			</form>
+		}
+	}
+}

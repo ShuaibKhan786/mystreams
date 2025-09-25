@@ -1,0 +1,23 @@
+package layouts
+
+import "github.com/ShuaibKhan786/mystreams/views/components/button"
+
+templ AdminShowLayout() {
+	@AdminDefaultContentLayout("Shows") {
+		<section class="flex gap-3">
+			@button.Button(button.Props{
+				Size:    button.Medium,
+				Outline: true,
+				Class:   " ml-auto",
+				Icon:    "fa-solid fa-plus text-sm",
+				Attributes: templ.Attributes{
+					"hx-get":    "/admin/movies/new",
+					"hx-target": "body",
+					"hx-swap":   "beforeend",
+				},
+			}) {
+				Create 
+			}
+		</section>
+	}
+}

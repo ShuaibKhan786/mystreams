@@ -1,0 +1,58 @@
+package navbar
+
+type NavbarProps struct {
+	Class string
+}
+
+templ Navbar(props ...NavbarProps) {
+	{{
+	var p NavbarProps
+	if len(props) > 0 {
+		p = props[0]
+	}
+	style := `
+        w-full
+        flex items-center justify-between gap-1.5 
+        `
+	style += p.Class
+	}}
+	<nav
+		class={ style }
+	>
+		{ children... }
+	</nav>
+}
+
+type ItemProps struct {
+	Class      string
+	Label      string
+	Icon       string
+	Attributes templ.Attributes
+}
+
+templ NavbarItem(props ...ItemProps) {
+	{{ var p ItemProps }}
+	{{
+	if len(props) > 0 {
+		p = props[0]
+	}
+	// you can always changes as your wish here for style
+	style := `
+		p-1.5 md:p-3 flex flex-col md:flex-row items-center gap-1 md:gap-1.5
+		text-xs md:text-base text-neutral-500 dark:text-neutral-500
+		hover:text-[#171717] hover:dark:text-[#fafafa]
+		cursor-pointer
+	`
+	style += p.Class
+	}}
+	<a
+		id="navbar-item"
+		{ p.Attributes... }
+		class={ style }
+	>
+		if p.Icon != "" {
+			<i class={ p.Icon }></i>
+		}
+		<span class="leading-none">{ p.Label }</span>
+	</a>
+}

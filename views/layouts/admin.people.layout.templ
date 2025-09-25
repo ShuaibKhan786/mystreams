@@ -1,0 +1,65 @@
+package layouts
+
+import "github.com/ShuaibKhan786/mystreams/views/components/button"
+import "github.com/ShuaibKhan786/mystreams/views/components/modal"
+import "github.com/ShuaibKhan786/mystreams/views/components/input"
+import "github.com/ShuaibKhan786/mystreams/views/components/dropdown"
+
+templ AdminPeopleLayout() {
+	@AdminDefaultContentLayout("People") {
+		<section class="flex gap-3">
+			@button.Button(button.Props{
+				Size:    button.Medium,
+				Outline: true,
+				Class:   " ml-auto",
+				Icon:    "fa-solid fa-plus text-sm",
+				Attributes: templ.Attributes{
+					"hx-get":    "/admin/people/new",
+					"hx-target": "body",
+					"hx-swap":   "beforeend",
+				},
+			}) {
+				Create 
+			}
+		</section>
+	}
+}
+
+templ AdminPeopleCreateLayout() {
+	@modal.Modal(modal.Props{
+		Title: "Create Person",
+	}) {
+		// add necessary things like table refresh and so on		
+		<form
+			hx-post="/admin/people"
+			hx-target="this"
+			hx-swap="none"
+			class="px-2 py-10 flex flex-col gap-3"
+		>
+			@input.Input(input.Props{
+				Name: "name", Type: "text", Placeholder: "eg: Cillian Murphy", Class: "w-70",
+			})
+			@dropdown.Dropdown(dropdown.Props{
+				Name: "gender", Label: "Select Gender",
+			}) {
+				@dropdown.DropdownItem(dropdown.ItemProps{
+					Label: "Male", Value: "male",
+				})
+				@dropdown.DropdownItem(dropdown.ItemProps{
+					Label: "Female", Value: "female",
+				})
+			}
+			@button.Button(button.Props{
+				Class: " ml-auto",
+				Outline: true,
+				Size:    button.Small,
+				Icon:    "fa-solid fa-plus fa-sm",
+				Attributes: templ.Attributes{
+					"type": "submit",
+				},
+			}) {
+				Create 
+			}
+		</form>
+	}
+}

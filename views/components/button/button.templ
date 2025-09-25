@@ -1,0 +1,70 @@
+package button
+
+type Size int
+
+const (
+	Small Size = iota
+	Medium
+	Large
+	None
+)
+
+type Props struct {
+	Class      string
+	Size       Size
+	Outline    bool
+	Disabled   bool
+	Icon       string
+	Attributes templ.Attributes
+}
+
+templ Button(props ...Props) {
+	{{
+		var p Props
+		if len(props) > 0 {
+			p = props[0]
+		}
+
+		style := "flex items-center justify-center gap-2 rounded-lg cursor-pointer font-semibold border-[#e5e5e5] dark:border-[#ffffff1a] "
+
+		switch p.Size {
+		case Small:
+			style += "px-3 py-1.5 "
+		case Medium:
+			style += "px-4 py-2 "
+		case Large:
+			style += "px-6 py-3 "
+		case None:
+			style += ""
+		}
+
+		if p.Outline {
+			style += "border shadow-sm dark:shadow-none "
+		}
+
+		if p.Disabled {
+			style += "opacity-50 cursor-not-allowed border-[#f0f0f0] dark:border-[#ffffff0d] text-[#a1a1a1] dark:text-[#ffffff40] "
+		} else {
+			// feel free to change the hover effect
+			if p.Outline {
+				style += "hover:bg-black/5 dark:hover:bg-white/10 "
+			} else {
+				style += "hover:bg-[#f5f5f5] hover:dark:bg-[#171717] "
+			}
+		}
+
+		style += p.Class
+	}}
+	<button
+		if p.Disabled {
+			disabled
+		}
+		{ p.Attributes... }
+		class={ style }
+	>
+		if p.Icon != "" {
+			<span class={ p.Icon }></span>
+		}
+		{ children... }
+	</button>
+}

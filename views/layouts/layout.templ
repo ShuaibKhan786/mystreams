@@ -1,0 +1,78 @@
+package layouts
+
+import "github.com/ShuaibKhan786/mystreams/views/components/card"
+
+// main app layout section
+templ Layout(mainContent templ.Component) {
+	@Base() {
+		<div
+			x-data="{ sidebarOpenDesktop: true }"
+			class="w-full h-dvh flex"
+		>
+			@LayoutSidebarDesktop()
+			// Main Content
+			<main
+				id="main-container"
+				class="flex-1 w-full h-full p-2 flex"
+			>
+				@mainContent
+			</main>
+		</div>
+	}
+}
+
+templ DefaultContentLayout(activeNav string) {
+	@card.Card(card.Props{
+		Class: "w-full h-full bg-white dark:bg-[#0a0a0a]",
+	}) {
+		@card.CardHeaderWrapper() {
+			@LayoutNavbar(activeNav)
+		}
+		@card.CardContentWrapper(card.ContentProps{
+			Class: " flex-1 overflow-hidden px-4 py-2 flex flex-col gap-3",
+		}) {
+			// actual main contents render here
+			// due to design philosophy 
+			{ children... }
+		}
+		@card.CardFooterWrapper(" flex md:hidden ") {
+			@LayoutNavbarMobile()
+		}
+	}
+}
+
+// admin app layout section
+templ AdminLayout(mainContent templ.Component) {
+	@Base() {
+		<div
+			x-data="{ sidebarOpenDesktop: true }"
+			class="w-full h-dvh flex"
+		>
+			@AdminLayoutSidebar()
+			// Main Content
+			<main
+				id="main-container"
+				class="flex-1 w-full h-full p-2 flex"
+			>
+				@mainContent
+			</main>
+		</div>
+	}
+}
+
+templ AdminDefaultContentLayout(activeNav string) {
+	@card.Card(card.Props{
+		Class: "w-full h-full bg-white dark:bg-[#0a0a0a]",
+	}) {
+		@card.CardHeaderWrapper() {
+			@AdminLayoutNavbar(activeNav)
+		}
+		@card.CardContentWrapper(card.ContentProps{
+			Class: " flex-1 overflow-hidden px-4 py-2 flex flex-col gap-3",
+		}) {
+			// actual main contents render here
+			// due to design philosophy 
+			{ children... }
+		}
+	}
+}

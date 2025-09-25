@@ -1,0 +1,92 @@
+package pagination
+
+import "github.com/ShuaibKhan786/mystreams/views/components/button"
+import "fmt"
+
+type Props struct {
+	ID          string
+	BaseURL     string
+	PageSize    int64
+	CurrentPage int64
+	TotalPage   int64
+	Class       string
+	Attributes  templ.Attributes
+}
+
+//button, input component dependancy
+templ Pagination(props ...Props) {
+	{{
+	var p Props
+	if len(props) > 0 {
+		p = props[0]
+	}
+	label := ""
+	if p.CurrentPage > 0 && p.TotalPage > 0 {
+		label = fmt.Sprintf("Showing page %d of %d", p.CurrentPage, p.TotalPage)
+	}
+	icons := [...]string{
+		"fa-angles-left", "fa-angle-left", "fa-angle-right", "fa-angles-right",
+	}
+	}}
+	<div class="py-1.5 flex items-center justify-between gap-1.5 ">
+		<section>
+			<div>{ label }</div>
+		</section>
+		<section class="grid grid-cols-4 gap-1.5">
+			for index, icon := range icons {
+				{{
+				page := p.CurrentPage
+				disableButton := false
+				switch index {
+				case 0: //first page
+					page = 1
+					if p.CurrentPage <= 1 {
+						disableButton = true
+					}
+				case 1: // prev page
+					page = p.CurrentPage - 1
+					if p.CurrentPage <= 1 {
+						disableButton = true
+					}
+				case 2: // next page
+					page = p.CurrentPage + 1
+					if p.CurrentPage == p.TotalPage {
+						disableButton = true
+					}
+				case 3: // last page
+					page = p.TotalPage
+					if p.CurrentPage == p.TotalPage {
+						disableButton = true
+					}
+				}
+				}}
+				@button.Button(button.Props{
+					Icon:     fmt.Sprintf("fa-solid %s", icon),
+					Outline:  true,
+					Size:     button.None,
+					Class:    " p-2",
+					Disabled: disableButton,
+					Attributes: MergeAttributes(
+						templ.Attributes{
+							"hx-get":      fmt.Sprintf("%s?partial=true&page=%d&size=%d", p.BaseURL, page, p.PageSize),
+							"hx-push-url": fmt.Sprintf("%s?page=%d&size=%d", p.BaseURL, page, p.PageSize),
+						},
+						p.Attributes,
+					),
+				})
+			}
+		</section>
+	</div>
+}
+
+func MergeAttributes(tmplAttrbs ...templ.Attributes) templ.Attributes {
+	merged := templ.Attributes{}
+
+	for _, tmplAttrb := range tmplAttrbs {
+		for key, value := range tmplAttrb {
+			merged[key] = value
+		}
+	}
+
+	return merged
+}

@@ -1,0 +1,45 @@
+package localTime
+
+import (
+	"fmt"
+	"time"
+)
+
+type Format string
+
+const (
+	HHMM          Format = `{ hour: '2-digit', minute: '2-digit' }`
+	YYYYMMDD      Format = `{ year: 'numeric', month: '2-digit', day: '2-digit' }`
+	YYYYMMDDHHMM  Format = `{ year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }`
+	DDOctYYYY     Format = `{ day: 'numeric', month: 'short', year: 'numeric' }`
+	DDOct         Format = `{ day: 'numeric', month: 'short' }`
+	DDOctoberYYYY Format = `{ day: 'numeric', month: 'long', year: 'numeric' }`
+	DDOctober     Format = `{ day: 'numeric', month: 'long' }`
+	Fallback      Format = `{ year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }`
+)
+
+type Props struct {
+	T      time.Time // in UTC
+	Format Format
+	Class  string
+}
+
+templ LocalTime(props ...Props) {
+	{{
+		var p Props
+		if len(props) > 0 {
+			p = props[0]
+		}
+
+		if p.Format == "" {
+			p.Format = Fallback
+		}
+	}}
+	<time
+		x-text={ fmt.Sprintf(
+			"new Date('%s').toLocaleString([], %s)",
+			p.T.UTC().Format(time.RFC3339), p.Format,
+		) }
+		class={ p.Class }
+	></time>
+}

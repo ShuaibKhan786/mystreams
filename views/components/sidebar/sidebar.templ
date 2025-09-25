@@ -1,0 +1,190 @@
+package sidebar
+
+type Props struct {
+	Class      string
+	Attributes templ.Attributes
+}
+
+templ AppSidebar(props ...Props) {
+	{{ var p Props }}
+	{{
+	if len(props) > 0 {
+		p = props[0]
+	}
+	// you can always changes as your wish here for style
+	style := `
+	relative h-full flex flex-col overflow-hidden gap-1  
+	bg-[#fafafa] dark:bg-[#171717] text-[#171717] dark:text-[#fafafa] 
+	`
+
+	style += p.Class
+	}}
+	<nav
+		{ p.Attributes... }
+		class={ style }
+	>
+		{ children... }
+	</nav>
+}
+
+templ ScrollAreaWrapper() {
+	<div
+		class="py-2 flex-1 flex flex-col gap-2 overflow-y-auto"
+	>
+		{ children... }
+	</div>
+}
+
+type ItemProps struct {
+	Class      string
+	Label      string
+	Icon       string
+	Attributes templ.Attributes
+}
+
+templ SiderbarItem(props ...ItemProps) {
+	{{ var p ItemProps }}
+	{{
+	if len(props) > 0 {
+		p = props[0]
+	}
+	// you can always changes as your wish here for style
+	style := `
+		text-left mx-4 px-3 py-1.5 flex gap-3 items-center rounded-lg
+		hover:bg-[#f5f5f5] hover:dark:bg-[#262626]
+		focus:bg-[#f5f5f5] focus:dark:bg-[#262626]
+		cursor-pointer
+	`
+	style += p.Class
+	}}
+	<a
+		id="sidebar-item"
+		{ p.Attributes... }
+		class={ style }
+	>
+		if p.Icon != "" {
+			<span class={ p.Icon }></span>
+		}
+		<span>{ p.Label }</span>
+	</a>
+}
+
+type ItemGroupProps struct {
+	GroupName  string
+	Class      string
+	Attributes templ.Attributes
+}
+
+templ SidebarItemGroup(props ...ItemGroupProps) {
+	{{ var p ItemGroupProps }}
+	{{
+	if len(props) > 0 {
+		p = props[0]
+	}
+	style := `flex flex-col gap-1.5`
+	style += p.Class
+	}}
+	<ul
+		{ p.Attributes... }
+		class={ style }
+	>
+		<li class="mx-4 px-2 py-1 text-sm text-[#525252] dark:text-[#d4d4d4]">{ p.GroupName }</li>
+		{ children... }
+	</ul>
+}
+
+type AccordionProps struct {
+	Icon       string
+	Label      string
+	Class      string
+	Attributes templ.Attributes
+}
+
+templ SidebarAccordion(props ...AccordionProps) {
+	{{
+		var p AccordionProps
+		if len(props) > 0 {
+			p = props[0]
+		}
+		style := `
+		w-full
+		text-left px-3 py-1.5 flex gap-3 items-center rounded-lg
+		hover:bg-[#f5f5f5] hover:dark:bg-[#262626]
+		focus:bg-[#f5f5f5] focus:dark:bg-[#262626]
+		cursor-pointer
+		`
+
+		style += p.Class
+	}}
+	<div
+		x-data="{ isAccordionOpen: false }"
+		class="mx-4"
+	>
+		<button
+			@click="isAccordionOpen = !isAccordionOpen"
+			class={ style }
+		>
+			if p.Icon != "" {
+				<span class={ p.Icon }></span>
+			}
+			<span>{ p.Label }</span>
+			<span :class="isAccordionOpen ? 'ml-auto fa-solid fa-angle-down fa-sm' : 'ml-auto fa-solid fa-angle-left fa-sm'"></span>
+		</button>
+		<div
+			x-show="isAccordionOpen"
+			class="py-1.5 flex flex-col gap-1.5"
+		>
+			{ children... }
+		</div>
+	</div>
+}
+
+type HeaderProps struct {
+	Class      string
+	Attributes templ.Attributes
+}
+
+templ SidebarHeader(props ...HeaderProps) {
+	{{ var p HeaderProps }}
+	{{
+	if len(props) > 0 {
+		p = props[0]
+	}
+	style := `
+	shrink-0 py-2 flex flex-col gap-1.5 
+	`
+
+	style += p.Class
+	}}
+	<ul
+		{ p.Attributes... }
+		class={ style }
+	>
+		{ children... }
+	</ul>
+}
+
+type FooterProps struct {
+	Class      string
+	Attributes templ.Attributes
+}
+
+templ SidebarFooter(props ...FooterProps) {
+	{{ var p FooterProps }}
+	{{
+	if len(props) > 0 {
+		p = props[0]
+	}
+	style := `
+	shrink-0 py-2 flex flex-col gap-2
+	`
+
+	style += p.Class
+	}}
+	<div
+		{ p.Attributes... }
+		class={ style }
+	>
+		{ children... }
+	</div>
+}

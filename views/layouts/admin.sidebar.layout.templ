@@ -1,0 +1,82 @@
+package layouts
+
+import "github.com/ShuaibKhan786/mystreams/views/components/sidebar"
+
+// Expected x-data="{ sidebarOpenDesktop: true }"
+// to be declared on the parent div / container
+// it works on breakpoints so when used the controls sync with breakpoints
+// it used on dekstop and mobile sidebar
+templ AdminLayoutSidebar() {
+	// Desktop Sidebar 
+	@sidebar.AppSidebar(sidebar.Props{
+		Class: "min-w-64",
+		Attributes: templ.Attributes{
+			"x-show": "sidebarOpenDesktop",
+		},
+	}) {
+		@sidebar.SidebarHeader() {
+			<div class="flex flex-row items-center justify-center">
+				<div class="p-4 italic">MyStreams</div>
+			</div>
+		}
+		@sidebar.ScrollAreaWrapper() {
+			@sidebar.SiderbarItem(sidebar.ItemProps{
+				Label: "Movies",
+				Icon:  "fa-solid fa-video ",
+				Attributes: templ.Attributes{
+					"hx-get":      "/admin/movies?partial=true",
+					"href":        "/admin/movies?partial=true",
+					"hx-push-url": "/admin/movies",
+					"hx-target":   "#main-container",
+					"hx-swap":     "innerHTML",
+				},
+			})
+			@sidebar.SiderbarItem(sidebar.ItemProps{
+				Label: "Shows",
+				Icon:  "fa-solid fa-tv text-base",
+				Attributes: templ.Attributes{
+					"hx-get":      "/admin/shows?partial=true",
+					"href":        "/admin/shows?partial=true",
+					"hx-push-url": "/admin/shows",
+					"hx-target":   "#main-container",
+					"hx-swap":     "innerHTML",
+				},
+			})
+            @sidebar.SiderbarItem(sidebar.ItemProps{
+				Label: "People",
+				Icon:  "fa-solid fa-users text-base",
+				Attributes: templ.Attributes{
+					"hx-get":      "/admin/people?partial=true",
+					"href":        "/admin/people?partial=true",
+					"hx-push-url": "/admin/people",
+					"hx-target":   "#main-container",
+					"hx-swap":     "innerHTML",
+				},
+			})
+            @sidebar.SiderbarItem(sidebar.ItemProps{
+				Label: "Genres",
+				Icon:  "fa-solid fa-layer-group text-base",
+				Attributes: templ.Attributes{
+					"hx-get":      "/admin/genres?partial=true",
+					"href":        "/admin/genres?partial=true",
+					"hx-push-url": "/admin/genres",
+					"hx-target":   "#main-container",
+					"hx-swap":     "innerHTML",
+				},
+			})
+		}
+		@sidebar.SidebarFooter(sidebar.FooterProps{}) {
+			@sidebar.SiderbarItem(sidebar.ItemProps{
+				Label: "Profile",
+				Icon:  "fa-solid fa-user text-base",
+				Attributes: templ.Attributes{
+					"hx-get":      "/profile?partial=true",
+					"href":        "/profile?partial=true",
+					"hx-push-url": "/profile",
+					"hx-target":   "#main-container",
+					"hx-swap":     "innerHTML",
+				},
+			})
+		}
+	}
+}

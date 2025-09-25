@@ -1,0 +1,79 @@
+package card
+
+type Props struct {
+	Class      string
+	Attributes templ.Attributes
+}
+
+templ Card(props ...Props) {
+	{{ var p Props }}
+	{{
+	if len(props) > 0 {
+		p = props[0]
+	}
+
+	style := `
+		min-h-0
+		flex flex-col
+        rounded-xl border border-[#e5e7eb] dark:border-none 
+		shadow-sm dark:shadow-none 
+		`
+
+	style += p.Class
+	}}
+	<div
+		class={ style }
+		{ p.Attributes... }
+	>
+		{ children... }
+	</div>
+}
+
+templ CardHeaderWrapper(class ...string) {
+	{{
+		var c string
+		if len(class) > 0 {
+			c = class[0]
+		}
+		style := "sticky border-b border-b-[#e5e5e5] dark:border-b-[#ffffff1a] "
+		style += c
+	}}
+	<div class={ style }>
+		{ children... }
+	</div>
+}
+
+templ CardFooterWrapper(class ...string) {
+	{{
+		var c string
+		if len(class) > 0 {
+			c = class[0]
+		}
+		// style := "sticky border-t border-t-[#e5e5e5] dark:border-t-[#ffffff1a] "
+		style := "sticky m-2 rounded-xl bg-transparent dark:bg-[#171717] shadow-sm dark:shadow-none"
+		style += c
+	}}
+	<div class={ style }>
+		{ children... }
+	</div>
+}
+
+type ContentProps struct {
+	ID         string
+	Class      string
+	Attributes templ.Attributes
+}
+
+templ CardContentWrapper(props ...ContentProps) {
+	{{
+		var p ContentProps
+		if len(props) > 0 {
+			p = props[0]
+		}
+		style := ""
+		style += p.Class
+	}}
+	<div class={ style }>
+		{ children... }
+	</div>
+}
