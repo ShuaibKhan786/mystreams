@@ -26,6 +26,10 @@ func main() {
 
 	// admin endpoint
 	admin := app.Group("/admin")
+	admin.Get("/", func(c *fiber.Ctx) error {
+		// later route to dashboard
+		return c.Redirect("/admin/movies", fiber.StatusSeeOther)
+	})
 
 	// admin movie endpoint
 	adminMovies := admin.Group("/movies", middlewares.AddHTMLResHeader)
@@ -41,11 +45,11 @@ func main() {
 	adminPeople := admin.Group("/people", middlewares.AddHTMLResHeader)
 	adminPeople.Get("/", handlers.AdminPeoplePage)
 	adminPeople.Get("/new", handlers.AdminPeopleCreateModal)
+	adminPeople.Get("/list", handlers.AdminListPeople)
 	adminPeople.Get("/:id", handlers.AdminGetPeople)
 	adminPeople.Post("/", handlers.AdminCreatePeople)
 	adminPeople.Put("/:id", handlers.AdminUpdatePeople)
 	adminPeople.Delete("/:id", handlers.AdminDeletePeople)
-	adminPeople.Get("/list", handlers.AdminListPeople)
 
 	// admin genres endpoint
 	adminGenres := admin.Group("/genres", middlewares.AddHTMLResHeader)

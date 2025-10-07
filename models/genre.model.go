@@ -7,7 +7,7 @@ import (
 )
 
 type Genre struct {
-	ID   *int64  `form:"id,omitempty" json:"id,omitempty"`
+	ID   *int    `form:"id,omitempty" json:"id,omitempty"`
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 }
 

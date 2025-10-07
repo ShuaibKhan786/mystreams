@@ -8,7 +8,7 @@ const (
 )
 
 type Movie struct {
-	ID          *int64   `form:"id,omitempty"`
+	ID          *int     `form:"id,omitempty"`
 	Title       *string  `form:"title,omitempty"`
 	Description *string  `form:"description,omitempty"`
 	Year        *string  `form:"year,omitempty"`

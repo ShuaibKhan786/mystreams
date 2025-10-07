@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"github.com/ShuaibKhan786/mystreams/models"
 	"github.com/ShuaibKhan786/mystreams/views/layouts"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 )
 
 func AdminGenrePage(c *fiber.Ctx) error {
@@ -26,6 +28,15 @@ func AdminGetGenre(c *fiber.Ctx) error {
 }
 
 func AdminCreateGenre(c *fiber.Ctx) error {
+	var genre models.Genre
+
+	err := c.BodyParser(&genre)
+	if err != nil {
+		log.Errorf("Failed to parse a body in genre create :  ", err)
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	genre.Create(c.Context())
 
 	return nil
 }
