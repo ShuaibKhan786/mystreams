@@ -6,9 +6,10 @@ import "fmt"
 type Props struct {
 	ID          string
 	BaseURL     string
-	PageSize    int64
-	CurrentPage int64
-	TotalPage   int64
+	PageSize    int
+	CurrentPage int
+	TotalPage   int
+	Queries 	string
 	Class       string
 	Attributes  templ.Attributes
 }
@@ -68,8 +69,8 @@ templ Pagination(props ...Props) {
 					Disabled: disableButton,
 					Attributes: MergeAttributes(
 						templ.Attributes{
-							"hx-get":      fmt.Sprintf("%s?partial=true&page=%d&size=%d", p.BaseURL, page, p.PageSize),
-							"hx-push-url": fmt.Sprintf("%s?page=%d&size=%d", p.BaseURL, page, p.PageSize),
+							"hx-get":      fmt.Sprintf("%s?partial=true&page=%d&size=%d&%s", p.BaseURL, page, p.PageSize, p.Queries),
+							"hx-push-url": fmt.Sprintf("%s?page=%d&size=%d&%s", p.BaseURL, page, p.PageSize, p.Queries),
 						},
 						p.Attributes,
 					),

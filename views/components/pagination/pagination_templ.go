@@ -14,9 +14,10 @@ import "fmt"
 type Props struct {
 	ID          string
 	BaseURL     string
-	PageSize    int64
-	CurrentPage int64
-	TotalPage   int64
+	PageSize    int
+	CurrentPage int
+	TotalPage   int
+	Queries     string
 	Class       string
 	Attributes  templ.Attributes
 }
@@ -62,7 +63,7 @@ func Pagination(props ...Props) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(label)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/components/pagination/pagination.templ`, Line: 33, Col: 15}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/components/pagination/pagination.templ`, Line: 34, Col: 15}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -106,8 +107,8 @@ func Pagination(props ...Props) templ.Component {
 				Disabled: disableButton,
 				Attributes: MergeAttributes(
 					templ.Attributes{
-						"hx-get":      fmt.Sprintf("%s?partial=true&page=%d&size=%d", p.BaseURL, page, p.PageSize),
-						"hx-push-url": fmt.Sprintf("%s?page=%d&size=%d", p.BaseURL, page, p.PageSize),
+						"hx-get":      fmt.Sprintf("%s?partial=true&page=%d&size=%d&%s", p.BaseURL, page, p.PageSize, p.Queries),
+						"hx-push-url": fmt.Sprintf("%s?page=%d&size=%d&%s", p.BaseURL, page, p.PageSize, p.Queries),
 					},
 					p.Attributes,
 				),

@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/ShuaibKhan786/mystreams/models"
 	"github.com/ShuaibKhan786/mystreams/utils"
+	"github.com/ShuaibKhan786/mystreams/views/components/toast"
 	"github.com/ShuaibKhan786/mystreams/views/layouts"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -13,7 +15,19 @@ import (
 func AdminPeoplePage(c *fiber.Ctx) error {
 	partial := c.QueryBool("partial")
 
-	peopleLayout := layouts.AdminPeopleLayout()
+	paginationQuery := utils.NewPaginationQuery()
+	paginationQuery.Page = utils.DEFAULT_PAGINATION_PAGE
+	paginationQuery.Size = utils.DEFAULT_PAGINATION_SIZE
+
+	people := models.ReadPeople(c.Context(), &paginationQuery)
+
+	tablePagination := layouts.AdminPeoplePaginationTableLayout(
+		"", "",
+		utils.DEFAULT_PAGINATION_PAGE,
+		1,
+		people,
+	)
+	peopleLayout := layouts.AdminPeopleLayout(tablePagination)
 
 	if partial {
 		return peopleLayout.Render(c.Context(), c)
@@ -26,15 +40,43 @@ func AdminPeopleCreateModal(c *fiber.Ctx) error {
 	return layouts.AdminPeopleCreateLayout().Render(c.Context(), c)
 }
 
+func AdminPeopleEditModal(c *fiber.Ctx) error {
+	personID := getIDfromParms(c)
+	if personID == nil {
+		return toast.ToastNotification(toast.FAILURE, "Update Person", "Invalid credentials").
+			Render(c.Context(), c)
+	}
+
+	personResult := models.ReadPersonByID(c.Context(), personID)
+	if personResult == nil {
+		return toast.ToastNotification(toast.FAILURE, "Update Person", "Invalid credentials").
+			Render(c.Context(), c)
+	}
+
+	return layouts.AdminPeopleEditLayout(personResult).Render(c.Context(), c)
+}
+
+func AdminPeopleRemoveModal(c *fiber.Ctx) error {
+	personID := getIDfromParms(c)
+	if personID == nil {
+		return toast.ToastNotification(toast.FAILURE, "Delete Person", "Invalid credentials").
+			Render(c.Context(), c)
+	}
+
+	return layouts.AdminPeopleRemoveLayout(*personID).Render(c.Context(), c)
+}
+
 func AdminGetPeople(c *fiber.Ctx) error {
 	personID := getIDfromParms(c)
 	if personID == nil {
-		return c.SendString("invalid id")
+		return toast.ToastNotification(toast.FAILURE, "Get Person", "Invalid credentials").
+			Render(c.Context(), c)
 	}
 
 	person := models.ReadPersonByID(c.Context(), personID)
 	if person == nil {
-		return c.SendString("invalid id")
+		return toast.ToastNotification(toast.FAILURE, "Get Person", "Invalid credentials").
+			Render(c.Context(), c)
 	}
 
 	fmt.Fprintf(c, "Hi I am %s and I am %s", *person.Name, *person.Gender)
@@ -47,49 +89,75 @@ func AdminCreatePeople(c *fiber.Ctx) error {
 	err := c.BodyParser(&person)
 	if err != nil {
 		log.Error(err)
-		return nil
+		return toast.ToastNotification(toast.FAILURE, "Create Person", "Invalid payload").
+			Render(c.Context(), c)
 	}
 
 	// requiredFields := [...]string{"Name", "Gender"}
-	return person.Create(c.Context())
+
+	err = person.Create(c.Context())
+	if err != nil {
+		log.Error("Failed to run an INSERT Query")
+		return toast.ToastNotification(toast.FAILURE, "Create Person", "Person already exists").
+			Render(c.Context(), c)
+	}
+
+	return toast.ToastNotification(toast.SUCCESS, "Create Person", "Successfully created").
+		Render(c.Context(), c)
 }
 
 func AdminUpdatePeople(c *fiber.Ctx) error {
-	return nil
+	var person models.Person
+	err := c.BodyParser(&person)
+	if err != nil {
+		return toast.ToastNotification(toast.FAILURE, "Update Person", "Invalid payload").
+			Render(c.Context(), c)
+	}
+
+	err = person.Update(c.Context())
+	if err != nil {
+		log.Error("Failed to run an UPDATE query")
+		return toast.ToastNotification(toast.FAILURE, "Update Person", "Invalid payload").
+			Render(c.Context(), c)
+	}
+
+	return toast.ToastNotification(toast.SUCCESS, "Update Person", "Successfully updated ").
+		Render(c.Context(), c)
 }
 
 func AdminDeletePeople(c *fiber.Ctx) error {
-	return nil
+	personID := getIDfromParms(c)
+	if personID == nil {
+		return toast.ToastNotification(toast.FAILURE, "Delete Person", "Invalid credentials").
+			Render(c.Context(), c)
+	}
+
+	person := models.Person{ID: personID}
+	err := person.Delete(c.Context())
+	if err != nil {
+		log.Error("Failed to run an DELETE query ")
+		return toast.ToastNotification(toast.SUCCESS, "Delete Person", "Invalid credentials").
+			Render(c.Context(), c)
+	}
+
+	return toast.ToastNotification(toast.SUCCESS, "Delete Person", "Successfully deleted").
+		Render(c.Context(), c)
 }
 
+// /admin/prople?page=1&size=10&filter=gender;male&sort=asc,name;desc,created_at
 func AdminListPeople(c *fiber.Ctx) error {
-	// partial := c.QueryBool("partial")
-	page := c.QueryInt("page")
-	size := c.QueryInt("size")
-	filter := c.Query("filter")
-	sort := c.Query("sort")
+	paginationQuery := utils.NewPaginationQuery()
 
-	var err error
-	var filterQuery *utils.FilterQuery
-	if len(filter) > 0 {
-		filterQuery, err = utils.ParseFilterQuery(filter)
-		if err != nil {
-			// return some message
-		}
+	if err := paginationQuery.Parse(c); err != nil {
+		log.Error(err)
+		return err
 	}
 
-	var sortQueries []*utils.SortQuery
-	if len(sort) > 0 {
-		sortQueries, err = utils.ParseSortQuery(sort)
-		if err != nil {
-		}
+	if paginationQuery.Size == 0 {
+		paginationQuery.Size = utils.DEFAULT_PAGINATION_SIZE
 	}
 
-	if size == 0 {
-		size = utils.DEFAULT_PAGINATION_SIZE
-	}
-
-	people := models.ReadPeople(c.Context(), page, size, filterQuery, sortQueries)
+	people := models.ReadPeople(c.Context(), &paginationQuery)
 	if people != nil {
 	}
 
@@ -97,5 +165,10 @@ func AdminListPeople(c *fiber.Ctx) error {
 		fmt.Println(*person.ID, *person.Name)
 	}
 
-	return nil
+	jsonPeople, err := json.Marshal(&people)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return c.Send(jsonPeople)
 }

@@ -45,9 +45,11 @@ func main() {
 	adminPeople := admin.Group("/people", middlewares.AddHTMLResHeader)
 	adminPeople.Get("/", handlers.AdminPeoplePage)
 	adminPeople.Get("/new", handlers.AdminPeopleCreateModal)
+	adminPeople.Get("/:id/edit", handlers.AdminPeopleEditModal)
+	adminPeople.Get("/:id/remove", handlers.AdminPeopleRemoveModal)
 	adminPeople.Get("/list", handlers.AdminListPeople)
-	adminPeople.Get("/:id", handlers.AdminGetPeople)
 	adminPeople.Post("/", handlers.AdminCreatePeople)
+	adminPeople.Get("/:id", handlers.AdminGetPeople)
 	adminPeople.Put("/:id", handlers.AdminUpdatePeople)
 	adminPeople.Delete("/:id", handlers.AdminDeletePeople)
 
@@ -55,11 +57,11 @@ func main() {
 	adminGenres := admin.Group("/genres", middlewares.AddHTMLResHeader)
 	adminGenres.Get("/", handlers.AdminGenrePage)
 	adminGenres.Get("/new", handlers.AdminGenreCreateModal)
-	adminGenres.Get("/:id", handlers.AdminGetGenre)
+	adminGenres.Get("/list", handlers.AdminListGenre)
 	adminGenres.Post("/", handlers.AdminCreateGenre)
+	adminGenres.Get("/:id", handlers.AdminGetGenre)
 	adminGenres.Put("/:id", handlers.AdminUpdateGenre)
 	adminGenres.Delete("/:id", handlers.AdminDeleteGenre)
-	adminGenres.Get("/list", handlers.AdminListGenre)
 
 	// home endpoint
 	home := app.Group("/home", middlewares.AddHTMLResHeader)

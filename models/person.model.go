@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/ShuaibKhan786/mystreams/services/database"
 	"github.com/ShuaibKhan786/mystreams/utils"
@@ -17,28 +18,47 @@ const (
 )
 
 type Person struct {
-	ID     *int    `form:"id,omitempty" json:"id,omitempty"`
-	Name   *string `form:"name,omitempty" json:"name,omitempty"`
-	Gender *Gender `form:"gender,omitempty" json:"gender,omitempty"`
+	ID        *int    `form:"id,omitempty" json:"id,omitempty"`
+	Name      *string `form:"name,omitempty" json:"name,omitempty"`
+	Gender    *Gender `form:"gender,omitempty" json:"gender,omitempty"`
+	UpdatedAt *time.Time
+	CreatedAt *time.Time
 	// if you want you can add more information
 }
 
 func (p *Person) Create(ctx context.Context) error {
-	return database.RunInsertQuery(
+	return database.RunQuery(
 		ctx,
 		"INSERT INTO people (name, gender) VALUES ($1, $2);",
 		[]interface{}{*p.Name, *p.Gender},
 	)
 }
 
+func (p *Person) Update(ctx context.Context) error {
+	return database.RunQuery(
+		ctx,
+		"UPDATE people SET name=$1, gender=$2, updated_at=NOW() WHERE id=$3;",
+		[]interface{}{*p.Name, *p.Gender, *p.ID},
+	)
+}
+
+// warning: these is an hard delete
+func (p *Person) Delete(ctx context.Context) error {
+	return database.RunQuery(
+		ctx,
+		"DELETE FROM people WHERE id=$1;",
+		[]interface{}{*p.ID},
+	)
+}
+
 func ReadPersonByID(ctx context.Context, id *int) *Person {
 	return database.RunSelectQuery(
 		ctx,
-		"SELECT name, gender FROM people WHERE id = $1",
+		"SELECT id, name, gender FROM people WHERE id = $1",
 		func(row *sql.Row) (*Person, error) {
 			var person Person
 
-			err := row.Scan(&person.Name, &person.Gender)
+			err := row.Scan(&person.ID, &person.Name, &person.Gender)
 			if err != nil {
 				return nil, err
 			}
@@ -51,44 +71,54 @@ func ReadPersonByID(ctx context.Context, id *int) *Person {
 
 func ReadPeople(
 	ctx context.Context,
-	page, size int,
-	filter *utils.FilterQuery,
-	sort []*utils.SortQuery,
+	paginationQuery *utils.PaginationQuery,
 ) []*Person {
-	query := "SELECT id, name, gender FROM people "
-	queryOrder := " ORDER BY %s %s"
+	query := "SELECT id, name, gender, updated_at, created_at FROM people "
+	queryOrder := " ORDER BY "
 	queryPagination := " LIMIT %d OFFSET %d"
-	queryCondition := " WHERE %s=%s"
+	queryCondition := " WHERE"
+	queryOR := " OR"
 
-	queryPagination = fmt.Sprintf(queryPagination, size, (page-1)*size)
-
-	fmt.Println("SOrt ", sort)
-	for i, s := range sort {
-		switch s.Field {
-		case "name":
-			query += fmt.Sprintf(queryOrder, "name", s.Order)
-		case "gender":
-			query += fmt.Sprintf(queryOrder, "gender", s.Order)
+	if len(paginationQuery.Filter) > 0 {
+		query += queryCondition
+	}
+	index := 1
+	for field, serchQuery := range paginationQuery.Filter {
+		query += fmt.Sprintf(" %s = '%s'", field, serchQuery)
+		if index != len(paginationQuery.Filter) {
+			query += queryOR
 		}
-		if i < len(sort)-1 {
+		index++
+	}
+
+	query += queryOrder
+	if _, exists := paginationQuery.Sort["updated_at"]; !exists {
+		query += "updated_at DESC"
+	}
+	index = 1
+	for field, order := range paginationQuery.Sort {
+		// you can sanitize here
+		switch order {
+		case "asc":
+			query += fmt.Sprintf("%s %s", field, "ASC")
+		case "desc":
+			query += fmt.Sprintf("%s %s", field, "DESC")
+		}
+		if index != len(paginationQuery.Sort) {
 			query += ", "
 		}
+		index++
 	}
 
-	query += queryPagination
-
-	if filter != nil {
-		query += fmt.Sprintf(queryCondition, filter.Field, filter.Search)
-	}
-
-	fmt.Println(query)
+	offset := (paginationQuery.Page - 1) * paginationQuery.Size
+	query += fmt.Sprintf(queryPagination, paginationQuery.Size, offset)
 
 	people := database.RunSelectQueryList(
 		ctx,
 		query,
 		func(rows *sql.Rows) (*Person, error) {
 			var person Person
-			err := rows.Scan(&person.ID, &person.Name, &person.Gender)
+			err := rows.Scan(&person.ID, &person.Name, &person.Gender, &person.UpdatedAt, &person.CreatedAt)
 			if err != nil {
 				return nil, err
 			}

@@ -12,7 +12,7 @@ type Genre struct {
 }
 
 func (g *Genre) Create(ctx context.Context) error {
-	return database.RunInsertQuery(
+	return database.RunQuery(
 		ctx,
 		"INSERT INTO genres (name) VALUES ($1)",
 		[]interface{}{g.Name},

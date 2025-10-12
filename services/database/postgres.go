@@ -27,16 +27,17 @@ func ConnectPSQL() (*sql.DB, error) {
 	return db, nil
 }
 
-func RunInsertQuery(ctx context.Context, query string, args []interface{}) error {
+// INSERT, UPDATE and DELETE query
+func RunQuery(ctx context.Context, query string, args []interface{}) error {
 	stmt, err := db.PrepareContext(ctx, query)
 	if err != nil {
-		log.Errorf("Failed to prepare an insert query: %s : %v\n", query, err)
+		log.Errorf("Failed to prepare an query: %s : %v\n", query, err)
 		return err
 	}
 
 	_, err = stmt.ExecContext(ctx, args...)
 	if err != nil {
-		log.Errorf("Failed to run an insert query: %s : %v\n", query, err)
+		log.Errorf("Failed to run an query: %s : %v\n", query, err)
 		return err
 	}
 	return nil

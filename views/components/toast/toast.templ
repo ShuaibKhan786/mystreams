@@ -1,0 +1,48 @@
+package toast
+
+type State int
+
+const (
+	SUCCESS State = iota
+	FAILURE
+	WARNING
+	INFO
+)
+
+templ ToastNotification(state State, title, message string) {
+	{{
+		icon := "fa fa-circle-check text-xl "
+		switch state {
+		case SUCCESS:
+			icon += "text-[#31724C]"
+		case FAILURE:
+			icon += "text-[#8C2E2E]"
+		case INFO:
+			icon += "text-[#285C9E]"
+		case WARNING:
+			icon += "text-[#ECC65E]"
+		default:
+			icon += "text-[#D7DAE2]"
+		}
+	}}
+	<div hx-swap-oob="afterbegin:#toast-notification-container">
+		<div
+			x-data="{show: true}"
+			x-init="setTimeout(() => show = false, 2000)"
+			x-show="show"
+			class="w-96 py-2 px-4 bg-white flex gap-4 items-center rounded-lg bg-[#fafafa] dark:bg-[#171717] text-[#171717] dark:text-[#fafafa]"
+		>
+			<span
+				class={ icon }
+			></span>
+			<div class="flex flex-col">
+				<div class="font-lg font-semibold">{ title }</div>
+				<div>{ message }</div>
+			</div>
+			<span
+				@click="$root.remove()"
+				class="fa-solid fa-xmark text-md ml-auto cursor-pointer"
+			></span>
+		</div>
+	</div>
+}

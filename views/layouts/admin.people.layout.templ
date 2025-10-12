@@ -1,11 +1,17 @@
 package layouts
 
+import "fmt"
 import "github.com/ShuaibKhan786/mystreams/views/components/button"
 import "github.com/ShuaibKhan786/mystreams/views/components/modal"
 import "github.com/ShuaibKhan786/mystreams/views/components/input"
 import "github.com/ShuaibKhan786/mystreams/views/components/dropdown"
+import "github.com/ShuaibKhan786/mystreams/views/components/table"
+import "github.com/ShuaibKhan786/mystreams/views/components/pagination"
+import "github.com/ShuaibKhan786/mystreams/views/components/localtime"
+import "github.com/ShuaibKhan786/mystreams/models"
+import "github.com/ShuaibKhan786/mystreams/utils"
 
-templ AdminPeopleLayout() {
+templ AdminPeopleLayout(tablePagination templ.Component) {
 	@AdminDefaultContentLayout("People") {
 		<section class="flex gap-3">
 			@button.Button(button.Props{
@@ -19,8 +25,11 @@ templ AdminPeopleLayout() {
 					"hx-swap":   "beforeend",
 				},
 			}) {
-				Create 
+				Create
 			}
+		</section>
+		<section>
+			@tablePagination
 		</section>
 	}
 }
@@ -29,7 +38,7 @@ templ AdminPeopleCreateLayout() {
 	@modal.Modal(modal.Props{
 		Title: "Create Person",
 	}) {
-		// add necessary things like table refresh and so on		
+		// add necessary things like table refresh and so on
 		<form
 			hx-post="/admin/people"
 			hx-target="this"
@@ -50,7 +59,7 @@ templ AdminPeopleCreateLayout() {
 				})
 			}
 			@button.Button(button.Props{
-				Class: " ml-auto",
+				Class:   " ml-auto",
 				Outline: true,
 				Size:    button.Small,
 				Icon:    "fa-solid fa-plus fa-sm",
@@ -58,8 +67,164 @@ templ AdminPeopleCreateLayout() {
 					"type": "submit",
 				},
 			}) {
-				Create 
+				Create
 			}
 		</form>
 	}
+}
+
+templ AdminPeopleEditLayout(person *models.Person) {
+	@modal.Modal(modal.Props{
+		Title: "Update Person",
+	}) {
+		// add necessary things like table refresh and so on
+		<form
+			hx-put={ fmt.Sprintf("/admin/people/%d", utils.SanitizeNilPointer(person.ID)) }
+			hx-target="this"
+			hx-swap="none"
+			class="px-2 py-10 flex flex-col gap-3"
+		>
+			<input type="hidden" name="id" value={utils.SanitizeNilPointer(person.ID)}/>
+			@input.Input(input.Props{
+				Name: "name", Type: "text", Placeholder: "eg: Cillian Murphy", Class: "w-70",
+				Value: utils.SanitizeNilPointerUI(person.Name),
+			})
+			@dropdown.Dropdown(dropdown.Props{
+				Name: "gender", Label: "Select Gender",
+			}) {
+				@dropdown.DropdownItem(dropdown.ItemProps{
+					Label: "Male", Value: "male", Selected: "male" == utils.SanitizeNilPointer(person.Gender),
+				})
+				@dropdown.DropdownItem(dropdown.ItemProps{
+					Label: "Female", Value: "female", Selected: "female" == utils.SanitizeNilPointer(person.Gender),
+				})
+			}
+			@button.Button(button.Props{
+				Class:   " ml-auto",
+				Outline: true,
+				Size:    button.Small,
+				Icon:    "fa-solid fa-pen-to-square fa-sm",
+				Attributes: templ.Attributes{
+					"type": "submit",
+				},
+			}) {
+				Update
+			}
+		</form>
+	}
+}
+
+templ AdminPeopleRemoveLayout(id int) {
+	@modal.Modal(modal.Props{
+		Title: "Delete Person",
+	}) {
+		<div class="p-4 flex flex-col gap-2 items-center">
+			<h2 class="p-4">Are you sure you want to delete</h2>
+			@button.Button(button.Props{
+				Size:  button.Medium,
+				Class: " w-full !bg-[#FF0000] text-white dark:text-white",
+				Icon:  "fa-solid fa-trash text-sm",
+				Attributes: templ.Attributes{
+					"hx-delete": fmt.Sprintf("/admin/people/%d", id),
+					"hx-target": "this",
+					"hx-swap":   "none",
+				},
+			}) {
+				Delete
+			}
+			@button.Button(button.Props{
+				Outline: true,
+				Size:    button.Medium,
+				Class:   " w-full",
+				Icon:    "fa-solid fa-xmark text-sm",
+			}) {
+				Cancel
+			}
+		</div>
+	}
+}
+
+templ AdminPeopleTableLayout(people []*models.Person) {
+	@table.Table() {
+		@table.TableHeader() {
+			@table.TableHead() {
+				Name
+			}
+			@table.TableHead() {
+				Gender
+			}
+			@table.TableHead() {
+				Updated At
+			}
+			@table.TableHead() {
+				Created At
+			}
+			@table.TableHead() {
+				Actions
+			}
+		}
+		@table.TableBody() {
+			for _, person := range people {
+				@table.TableRow() {
+					@table.TableCell() {
+						{ utils.SanitizeNilPointerUI(person.Name) }
+					}
+					@table.TableCell() {
+						{ utils.SanitizeNilPointerUI(person.Gender) }
+					}
+					@table.TableCell() {
+						@localtime.LocalTime(
+							localtime.Props{
+								T:      utils.SanitizeNilPointer(person.UpdatedAt),
+								Format: localtime.YYYYMMDDHHMM,
+							},
+						)
+					}
+					@table.TableCell() {
+						@localtime.LocalTime(
+							localtime.Props{
+								T:      utils.SanitizeNilPointer(person.CreatedAt),
+								Format: localtime.YYYYMMDDHHMM,
+							},
+						)
+					}
+					@table.TableCell() {
+						<div class="flex gap-2">
+							@button.Button(button.Props{
+								Size:  button.None,
+								Class: " p-2",
+								Icon:  "fa-solid fa-pen-to-square text-sm",
+								Attributes: templ.Attributes{
+									"hx-get":    fmt.Sprintf("/admin/people/%d/edit", utils.SanitizeNilPointer(person.ID)),
+									"hx-target": "body",
+									"hx-swap":   "beforeend",
+								},
+							})
+							@button.Button(button.Props{
+								Size:  button.None,
+								Class: " p-2",
+								Icon:  "fa-solid fa-trash text-sm",
+								Attributes: templ.Attributes{
+									"hx-get":    fmt.Sprintf("/admin/people/%d/remove", utils.SanitizeNilPointer(person.ID)),
+									"hx-target": "body",
+									"hx-swap":   "beforeend",
+								},
+							})
+						</div>
+					}
+				}
+			}
+		}
+	}
+}
+
+templ AdminPeoplePaginationTableLayout(baseURL, queries string, currentPage, totalPage int, people []*models.Person) {
+	@AdminPeopleTableLayout(people)
+	@pagination.Pagination(pagination.Props{
+		BaseURL:     baseURL,
+		PageSize:    10,
+		CurrentPage: currentPage,
+		TotalPage:   totalPage,
+		Queries:     queries,
+	})
 }
