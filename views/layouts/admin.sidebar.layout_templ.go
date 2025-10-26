@@ -153,13 +153,49 @@ func AdminLayoutSidebar() templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = sidebar.SiderbarItem(sidebar.ItemProps{
+					Label: "Users",
+					Icon:  "fa-solid fa-users text-base",
+					Attributes: templ.Attributes{
+						"hx-get":      "/admin/users?partial=true",
+						"href":        "/admin/users?partial=true",
+						"hx-push-url": "/admin/users",
+						"hx-target":   "#main-container",
+						"hx-swap":     "innerHTML",
+					},
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, " ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = sidebar.SiderbarItem(sidebar.ItemProps{
+					Label: "Resources",
+					Icon:  "fa-solid fa-folder text-base",
+					Attributes: templ.Attributes{
+						"hx-get":      "/admin/resources?partial=true",
+						"href":        "/admin/resources?partial=true",
+						"hx-push-url": "/admin/resources",
+						"hx-target":   "#main-container",
+						"hx-swap":     "innerHTML",
+					},
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
 				return nil
 			})
 			templ_7745c5c3_Err = sidebar.ScrollAreaWrapper().Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, " ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -19,6 +19,7 @@ type Props struct {
 	TotalPage   int
 	Queries     string
 	Class       string
+	Target      string
 	Attributes  templ.Attributes
 }
 
@@ -63,7 +64,7 @@ func Pagination(props ...Props) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(label)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/components/pagination/pagination.templ`, Line: 34, Col: 15}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/components/pagination/pagination.templ`, Line: 35, Col: 15}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -90,12 +91,12 @@ func Pagination(props ...Props) templ.Component {
 				}
 			case 2: // next page
 				page = p.CurrentPage + 1
-				if p.CurrentPage == p.TotalPage {
+				if p.CurrentPage >= p.TotalPage {
 					disableButton = true
 				}
 			case 3: // last page
 				page = p.TotalPage
-				if p.CurrentPage == p.TotalPage {
+				if p.CurrentPage >= p.TotalPage {
 					disableButton = true
 				}
 			}
@@ -109,6 +110,8 @@ func Pagination(props ...Props) templ.Component {
 					templ.Attributes{
 						"hx-get":      fmt.Sprintf("%s?partial=true&page=%d&size=%d&%s", p.BaseURL, page, p.PageSize, p.Queries),
 						"hx-push-url": fmt.Sprintf("%s?page=%d&size=%d&%s", p.BaseURL, page, p.PageSize, p.Queries),
+						"hx-target":   p.Target,
+						"hx-swap":     "outerHTML",
 					},
 					p.Attributes,
 				),

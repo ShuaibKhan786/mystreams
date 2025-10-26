@@ -43,8 +43,8 @@ func Card(props ...Props) templ.Component {
 		style := `
 		min-h-0
 		flex flex-col
-        rounded-xl border border-[#e5e7eb] dark:border-none 
-		shadow-sm dark:shadow-none 
+        rounded-xl border border-[#e5e7eb] dark:border-none
+		shadow-sm dark:shadow-none
 		`
 
 		style += p.Class

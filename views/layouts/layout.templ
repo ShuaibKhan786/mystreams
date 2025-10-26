@@ -32,7 +32,7 @@ templ DefaultContentLayout(activeNav string) {
 			Class: " flex-1 overflow-hidden px-4 py-2 flex flex-col gap-3",
 		}) {
 			// actual main contents render here
-			// due to design philosophy 
+			// due to design philosophy
 			{ children... }
 		}
 		@card.CardFooterWrapper(" flex md:hidden ") {
@@ -68,10 +68,10 @@ templ AdminDefaultContentLayout(activeNav string) {
 			@AdminLayoutNavbar(activeNav)
 		}
 		@card.CardContentWrapper(card.ContentProps{
-			Class: " flex-1 overflow-hidden px-4 py-2 flex flex-col gap-3",
+			Class: " flex-1 overflow-auto px-4 py-2 flex flex-col gap-3",
 		}) {
 			// actual main contents render here
-			// due to design philosophy 
+			// due to design philosophy
 			{ children... }
 		}
 	}

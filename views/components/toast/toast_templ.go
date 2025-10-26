@@ -52,7 +52,7 @@ func ToastNotification(state State, title, message string) templ.Component {
 		default:
 			icon += "text-[#D7DAE2]"
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div hx-swap-oob=\"afterbegin:#toast-notification-container\"><div x-data=\"{show: true}\" x-init=\"setTimeout(() => show = false, 2000)\" x-show=\"show\" class=\"w-96 py-2 px-4 bg-white flex gap-4 items-center rounded-lg bg-[#fafafa] dark:bg-[#171717] text-[#171717] dark:text-[#fafafa]\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"z-100\" hx-swap-oob=\"afterbegin:#toast-notification-container\"><div x-data=\"{show: true}\" x-init=\"setTimeout(() => show = false, 2000)\" x-show=\"show\" class=\"w-96 py-2 px-4 bg-white flex gap-4 items-center rounded-lg bg-[#fafafa] dark:bg-[#171717] text-[#171717] dark:text-[#fafafa]\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

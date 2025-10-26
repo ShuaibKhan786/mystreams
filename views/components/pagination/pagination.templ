@@ -11,6 +11,7 @@ type Props struct {
 	TotalPage   int
 	Queries 	string
 	Class       string
+	Target 		string
 	Attributes  templ.Attributes
 }
 
@@ -51,12 +52,12 @@ templ Pagination(props ...Props) {
 					}
 				case 2: // next page
 					page = p.CurrentPage + 1
-					if p.CurrentPage == p.TotalPage {
+					if p.CurrentPage >= p.TotalPage  {
 						disableButton = true
 					}
 				case 3: // last page
 					page = p.TotalPage
-					if p.CurrentPage == p.TotalPage {
+					if p.CurrentPage >= p.TotalPage {
 						disableButton = true
 					}
 				}
@@ -71,6 +72,8 @@ templ Pagination(props ...Props) {
 						templ.Attributes{
 							"hx-get":      fmt.Sprintf("%s?partial=true&page=%d&size=%d&%s", p.BaseURL, page, p.PageSize, p.Queries),
 							"hx-push-url": fmt.Sprintf("%s?page=%d&size=%d&%s", p.BaseURL, page, p.PageSize, p.Queries),
+							"hx-target": p.Target,
+							"hx-swap": "outerHTML",
 						},
 						p.Attributes,
 					),

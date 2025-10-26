@@ -24,7 +24,7 @@ templ LayoutNavbar(currentNav ...string) {
 				Icon:  "fa-solid fa-bars-staggered",
 				Class: "hidden md:inline-flex",
 				Attributes: templ.Attributes{
-					"@click": "sidebarOpenDesktop = !sidebarOpenDesktop; console.log('Desktop'+sidebarOpenDesktop)",
+					"@click": "alert('Hello World!')",
 				},
 			})
 			if cv != "" {

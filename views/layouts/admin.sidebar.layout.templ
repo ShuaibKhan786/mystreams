@@ -7,7 +7,7 @@ import "github.com/ShuaibKhan786/mystreams/views/components/sidebar"
 // it works on breakpoints so when used the controls sync with breakpoints
 // it used on dekstop and mobile sidebar
 templ AdminLayoutSidebar() {
-	// Desktop Sidebar 
+	// Desktop Sidebar
 	@sidebar.AppSidebar(sidebar.Props{
 		Class: "min-w-64",
 		Attributes: templ.Attributes{
@@ -60,6 +60,28 @@ templ AdminLayoutSidebar() {
 					"hx-get":      "/admin/genres?partial=true",
 					"href":        "/admin/genres?partial=true",
 					"hx-push-url": "/admin/genres",
+					"hx-target":   "#main-container",
+					"hx-swap":     "innerHTML",
+				},
+			})
+            @sidebar.SiderbarItem(sidebar.ItemProps{
+				Label: "Users",
+				Icon:  "fa-solid fa-users text-base",
+				Attributes: templ.Attributes{
+					"hx-get":      "/admin/users?partial=true",
+					"href":        "/admin/users?partial=true",
+					"hx-push-url": "/admin/users",
+					"hx-target":   "#main-container",
+					"hx-swap":     "innerHTML",
+				},
+			})
+			@sidebar.SiderbarItem(sidebar.ItemProps{
+				Label: "Resources",
+				Icon:  "fa-solid fa-folder text-base",
+				Attributes: templ.Attributes{
+					"hx-get":      "/admin/resources?partial=true",
+					"href":        "/admin/resources?partial=true",
+					"hx-push-url": "/admin/resources",
 					"hx-target":   "#main-container",
 					"hx-swap":     "innerHTML",
 				},

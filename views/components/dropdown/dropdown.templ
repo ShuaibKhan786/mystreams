@@ -3,6 +3,7 @@ package dropdown
 import "fmt"
 
 type Props struct {
+	ID 		   string
 	Class      string
 	Name       string
 	Label      string
@@ -18,9 +19,9 @@ templ Dropdown(props ...Props) {
 	}
 	style := `
 	relative w-full
-	px-3 py-1.5 flex gap-3 items-center rounded-lg border 
+	px-3 py-1.5 flex gap-3 items-center rounded-lg border
 	border-[#e5e5e5] dark:border-[#ffffff1a]
-	bg-[#f9fafb] dark:bg-[#18181b] 
+	bg-[#f9fafb] dark:bg-[#18181b]
 	`
 	style += p.Class
 	}}
@@ -33,16 +34,16 @@ templ Dropdown(props ...Props) {
                 if (this.open) {
                     return this.close()
                 }
- 
+
                 this.$refs.button.focus()
- 
+
                 this.open = true
             },
             close(focusAfter) {
                 if (! this.open) return
- 
+
                 this.open = false
- 
+
                 focusAfter && focusAfter.focus()
             }
         }`, p.Label) }
@@ -58,6 +59,7 @@ templ Dropdown(props ...Props) {
 			:aria-expanded="open"
 			:aria-controls="$id('dropdown-button')"
 			type="button"
+			{ p.Attributes... }
 			class={ style }
 		>
 			if p.Icon != "" {
@@ -67,6 +69,7 @@ templ Dropdown(props ...Props) {
 			<span class="fa-solid fa-angle-down text-xs ml-auto "></span>
 		</button>
 		<div
+			id={p.ID}
 			x-ref="panel"
 			x-show="open"
 			x-transition.origin.top.left
@@ -74,7 +77,7 @@ templ Dropdown(props ...Props) {
 			:id="$id('dropdown-button')"
 			style="display: none;"
 			class="
-			absolute z-100 min-w-full p-1.5 left-0 mt-1 flex flex-col 
+			absolute z-100 min-w-full p-1.5 left-0 mt-1 flex flex-col
 			rounded-lg border-[#e5e5e5] dark:border-[#ffffff1a]
 			bg-[#f9fafb] dark:bg-[#18181b]
 			"
@@ -103,13 +106,14 @@ templ DropdownItem(props ...ItemProps) {
 		style := `
 		px-3 py-1 :
 		flex gap-2 items-center justify-between
-		rounded-lg 
+		rounded-lg
 		hover:bg-[#f5f5f5] hover:dark:bg-[#262626]
 		`
 		style += p.Class
 		clickString := fmt.Sprintf("selected = '%s'; label='%s'; open = false; ", p.Value, p.Label)
 
 		if p.Bind != "" {
+			//fix this
 			clickString = fmt.Sprintf("selected = '%s'; label='%s'; open = false; $dispatch('update-%s', '%s');", p.Value, p.Label, p.Bind, p.Label)
 		}
 	}}

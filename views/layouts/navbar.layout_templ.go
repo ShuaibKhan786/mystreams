@@ -62,7 +62,7 @@ func LayoutNavbar(currentNav ...string) templ.Component {
 				Icon:  "fa-solid fa-bars-staggered",
 				Class: "hidden md:inline-flex",
 				Attributes: templ.Attributes{
-					"@click": "sidebarOpenDesktop = !sidebarOpenDesktop; console.log('Desktop'+sidebarOpenDesktop)",
+					"@click": "alert('Hello World!')",
 				},
 			}).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {

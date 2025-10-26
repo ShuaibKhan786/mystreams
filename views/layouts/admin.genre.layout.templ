@@ -1,14 +1,30 @@
 package layouts
 
 import (
+	"fmt"
+	"github.com/ShuaibKhan786/mystreams/models"
+	"github.com/ShuaibKhan786/mystreams/utils"
 	"github.com/ShuaibKhan786/mystreams/views/components/button"
 	"github.com/ShuaibKhan786/mystreams/views/components/input"
+	"github.com/ShuaibKhan786/mystreams/views/components/localtime"
 	"github.com/ShuaibKhan786/mystreams/views/components/modal"
+	"github.com/ShuaibKhan786/mystreams/views/components/pagination"
+	"github.com/ShuaibKhan786/mystreams/views/components/table"
 )
 
-templ AdminGenreLayout() {
+templ AdminGenreLayout(tablePagination templ.Component) {
 	@AdminDefaultContentLayout("Genres") {
 		<section class="flex gap-3">
+			@input.Input(input.Props{
+				Name: "filter[name:similar]", Type: "text", Placeholder: "eg: search genres", Class: "w-70",
+				Attributes: templ.Attributes{
+					"hx-get":      "/admin/genres/list?page=1&size=10&partial=true",
+					"hx-trigger":  "keyup changed delay:500ms",
+					"hx-target":   "#table-pagination-container",
+					"hx-swap":     "outerHTML",
+					"hx-push-url": true,
+				},
+			})
 			@button.Button(button.Props{
 				Size:    button.Medium,
 				Outline: true,
@@ -20,17 +36,20 @@ templ AdminGenreLayout() {
 					"hx-swap":   "beforeend",
 				},
 			}) {
-				Create 
+				Create
 			}
+		</section>
+		<section>
+			@tablePagination
 		</section>
 	}
 }
 
 templ AdminGenreCreateLayout() {
 	@modal.Modal(modal.Props{
-		Title: "Create Person",
+		Title: "Create Genre",
 	}) {
-		// add necessary things like table refresh and so on		
+		// add necessary things like table refresh and so on
 		<form
 			hx-post="/admin/genres"
 			hx-target="this"
@@ -49,8 +68,159 @@ templ AdminGenreCreateLayout() {
 					"type": "submit",
 				},
 			}) {
-				Create 
+				Create
 			}
 		</form>
 	}
+}
+
+templ AdminGenreEditLayout(genre *models.Genre) {
+	@modal.Modal(modal.Props{
+		Title: "Update Genre",
+	}) {
+		// add necessary things like table refresh and so on
+		<form
+			hx-put={ fmt.Sprintf("/admin/genres/%d", utils.SanitizeNilPointer(genre.ID)) }
+			hx-target="this"
+			hx-swap="none"
+			class="px-2 py-10 flex flex-col gap-3"
+		>
+			<input type="hidden" name="id" value={ utils.SanitizeNilPointer(genre.ID) }/>
+			@input.Input(input.Props{
+				Name: "name", Type: "text", Placeholder: "eg: action, drama", Class: "w-70",
+				Value: utils.SanitizeNilPointerUI(genre.Name),
+			})
+			@button.Button(button.Props{
+				Class:   " ml-auto",
+				Outline: true,
+				Size:    button.Small,
+				Icon:    "fa-solid fa-pen-to-square fa-sm",
+				Attributes: templ.Attributes{
+					"type": "submit",
+				},
+			}) {
+				Update
+			}
+		</form>
+	}
+}
+
+templ AdminGenreRemoveLayout(id int) {
+	@modal.Modal(modal.Props{
+		Title: "Delete Genre",
+	}) {
+		<div class="p-4 flex flex-col gap-2 items-center">
+			<h2 class="p-4">Are you sure you want to delete</h2>
+			@button.Button(button.Props{
+				Size:  button.Medium,
+				Class: " w-full !bg-[#FF0000] text-white dark:text-white",
+				Icon:  "fa-solid fa-trash text-sm",
+				Attributes: templ.Attributes{
+					"hx-delete": fmt.Sprintf("/admin/genres/%d", id),
+					"hx-target": "this",
+					"hx-swap":   "none",
+				},
+			}) {
+				Delete
+			}
+			@button.Button(button.Props{
+				Outline: true,
+				Size:    button.Medium,
+				Class:   " w-full",
+				Icon:    "fa-solid fa-xmark text-sm",
+			}) {
+				Cancel
+			}
+		</div>
+	}
+}
+
+templ AdminGenreTableLayout(genres []*models.Genre) {
+	@table.Table() {
+		@table.TableHeader() {
+			@table.TableHead() {
+				Name
+			}
+			@table.TableHead() {
+				Updated At
+			}
+			@table.TableHead() {
+				Created At
+			}
+			@table.TableHead() {
+				Actions
+			}
+		}
+		@table.TableBody() {
+			if len(genres) ==  0 {
+				@table.TableRow() {
+					@table.TableCellNoContent(4) {
+						No records to show
+					}
+				}
+			} else {
+				for _, genre := range genres {
+					@table.TableRow() {
+						@table.TableCell() {
+							{ utils.SanitizeNilPointerUI(genre.Name) }
+						}
+						@table.TableCell() {
+							@localtime.LocalTime(
+								localtime.Props{
+									T:      utils.SanitizeNilPointer(genre.UpdatedAt),
+									Format: localtime.YYYYMMDDHHMM,
+								},
+							)
+						}
+						@table.TableCell() {
+							@localtime.LocalTime(
+								localtime.Props{
+									T:      utils.SanitizeNilPointer(genre.CreatedAt),
+									Format: localtime.YYYYMMDDHHMM,
+								},
+							)
+						}
+						@table.TableCell() {
+							<div class="flex gap-2">
+								@button.Button(button.Props{
+									Size:  button.None,
+									Class: " p-2",
+									Icon:  "fa-solid fa-pen-to-square text-sm text-[#10B981] dark:text-[#34D399]",
+									Attributes: templ.Attributes{
+										"hx-get":    fmt.Sprintf("/admin/genres/%d/edit", utils.SanitizeNilPointer(genre.ID)),
+										"hx-target": "body",
+										"hx-swap":   "beforeend",
+									},
+								})
+								@button.Button(button.Props{
+									Size:  button.None,
+									Class: " p-2",
+									Icon:  "fa-solid fa-trash text-sm text-[#EF4444] dark:text-[#F87171]",
+									Attributes: templ.Attributes{
+										"hx-get":    fmt.Sprintf("/admin/genres/%d/remove", utils.SanitizeNilPointer(genre.ID)),
+										"hx-target": "body",
+										"hx-swap":   "beforeend",
+									},
+								})
+							</div>
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+templ AdminGenrePaginationTableLayout(baseURL, queries string, currentPage, totalPage int, genres []*models.Genre) {
+	<div id="table-pagination-container">
+		@AdminGenreTableLayout(genres)
+		@pagination.Pagination(pagination.Props{
+			BaseURL:     baseURL,
+			PageSize:    10,
+			CurrentPage: currentPage,
+			TotalPage:   totalPage,
+			Queries:     queries,
+			Target:      "#table-pagination-container",
+		})
+	</div>
 }

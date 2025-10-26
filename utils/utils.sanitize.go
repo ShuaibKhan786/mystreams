@@ -14,6 +14,5 @@ func SanitizeNilPointerUI[T any](model *T) string {
 	if model != nil {
 		return fmt.Sprint(*model)
 	}
-
 	return ""
 }

@@ -14,6 +14,16 @@ import "github.com/ShuaibKhan786/mystreams/utils"
 templ AdminPeopleLayout(tablePagination templ.Component) {
 	@AdminDefaultContentLayout("People") {
 		<section class="flex gap-3">
+			@input.Input(input.Props{
+				Name: "filter[name:similar]", Type: "text", Placeholder: "eg: search people", Class: "w-70",
+				Attributes: templ.Attributes{
+					"hx-get": "/admin/people/list?page=1&size=10&partial=true",
+					"hx-trigger": "keyup changed delay:500ms",
+					"hx-target": "#table-pagination-container",
+					"hx-swap": "outerHTML",
+					"hx-push-url": true,
+				},
+			})
 			@button.Button(button.Props{
 				Size:    button.Medium,
 				Outline: true,
@@ -164,53 +174,61 @@ templ AdminPeopleTableLayout(people []*models.Person) {
 			}
 		}
 		@table.TableBody() {
-			for _, person := range people {
+			if len(people) ==  0 {
 				@table.TableRow() {
-					@table.TableCell() {
-						{ utils.SanitizeNilPointerUI(person.Name) }
+					@table.TableCellNoContent(5) {
+						No records to show
 					}
-					@table.TableCell() {
-						{ utils.SanitizeNilPointerUI(person.Gender) }
-					}
-					@table.TableCell() {
-						@localtime.LocalTime(
-							localtime.Props{
-								T:      utils.SanitizeNilPointer(person.UpdatedAt),
-								Format: localtime.YYYYMMDDHHMM,
-							},
-						)
-					}
-					@table.TableCell() {
-						@localtime.LocalTime(
-							localtime.Props{
-								T:      utils.SanitizeNilPointer(person.CreatedAt),
-								Format: localtime.YYYYMMDDHHMM,
-							},
-						)
-					}
-					@table.TableCell() {
-						<div class="flex gap-2">
-							@button.Button(button.Props{
-								Size:  button.None,
-								Class: " p-2",
-								Icon:  "fa-solid fa-pen-to-square text-sm",
-								Attributes: templ.Attributes{
-									"hx-get":    fmt.Sprintf("/admin/people/%d/edit", utils.SanitizeNilPointer(person.ID)),
-									"hx-target": "body",
-									"hx-swap":   "beforeend",
+				}
+			} else {
+				for _, person := range people {
+					@table.TableRow() {
+						@table.TableCell() {
+							{ utils.SanitizeNilPointerUI(person.Name) }
+						}
+						@table.TableCell() {
+							{ utils.SanitizeNilPointerUI(person.Gender) }
+						}
+						@table.TableCell() {
+							@localtime.LocalTime(
+								localtime.Props{
+									T:      utils.SanitizeNilPointer(person.UpdatedAt),
+									Format: localtime.YYYYMMDDHHMM,
 								},
-							})
-							@button.Button(button.Props{
-								Size:  button.None,
-								Class: " p-2",
-								Icon:  "fa-solid fa-trash text-sm",
-								Attributes: templ.Attributes{
-									"hx-get":    fmt.Sprintf("/admin/people/%d/remove", utils.SanitizeNilPointer(person.ID)),
-									"hx-target": "body",
-									"hx-swap":   "beforeend",
+							)
+						}
+						@table.TableCell() {
+							@localtime.LocalTime(
+								localtime.Props{
+									T:      utils.SanitizeNilPointer(person.CreatedAt),
+									Format: localtime.YYYYMMDDHHMM,
 								},
-							})
-						</div>
+							)
+						}
+						@table.TableCell() {
+							<div class="flex gap-2">
+								@button.Button(button.Props{
+									Size:  button.None,
+									Class: " p-2",
+									Icon:  "fa-solid fa-pen-to-square text-sm text-[#10B981] dark:text-[#34D399]",
+									Attributes: templ.Attributes{
+										"hx-get":    fmt.Sprintf("/admin/people/%d/edit", utils.SanitizeNilPointer(person.ID)),
+										"hx-target": "body",
+										"hx-swap":   "beforeend",
+									},
+								})
+								@button.Button(button.Props{
+									Size:  button.None,
+									Class: " p-2",
+									Icon:  "fa-solid fa-trash text-sm text-[#EF4444] dark:text-[#F87171]",
+									Attributes: templ.Attributes{
+										"hx-get":    fmt.Sprintf("/admin/people/%d/remove", utils.SanitizeNilPointer(person.ID)),
+										"hx-target": "body",
+										"hx-swap":   "beforeend",
+									},
+								})
+							</div>
+						}
 					}
 				}
 			}
@@ -219,12 +237,15 @@ templ AdminPeopleTableLayout(people []*models.Person) {
 }
 
 templ AdminPeoplePaginationTableLayout(baseURL, queries string, currentPage, totalPage int, people []*models.Person) {
-	@AdminPeopleTableLayout(people)
-	@pagination.Pagination(pagination.Props{
-		BaseURL:     baseURL,
-		PageSize:    10,
-		CurrentPage: currentPage,
-		TotalPage:   totalPage,
-		Queries:     queries,
-	})
+	<div id="table-pagination-container">
+    	@AdminPeopleTableLayout(people)
+    	@pagination.Pagination(pagination.Props{
+    		BaseURL:     baseURL,
+    		PageSize:    10,
+    		CurrentPage: currentPage,
+    		TotalPage:   totalPage,
+    		Queries:     queries,
+    		Target:		 "#table-pagination-container",
+    	})
+	</div>
 }

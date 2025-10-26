@@ -345,7 +345,7 @@ func AdminDefaultContentLayout(activeNav string) templ.Component {
 				return nil
 			})
 			templ_7745c5c3_Err = card.CardContentWrapper(card.ContentProps{
-				Class: " flex-1 overflow-hidden px-4 py-2 flex flex-col gap-3",
+				Class: " flex-1 overflow-auto px-4 py-2 flex flex-col gap-3",
 			}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var13), templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err

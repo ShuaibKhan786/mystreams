@@ -19,26 +19,31 @@ const (
 
 type Person struct {
 	ID        *int    `form:"id,omitempty" json:"id,omitempty"`
-	Name      *string `form:"name,omitempty" json:"name,omitempty"`
-	Gender    *Gender `form:"gender,omitempty" json:"gender,omitempty"`
+	Name      *string `validation:"required" form:"name,omitempty" json:"name,omitempty"`
+	Gender    *Gender `validation:"required" form:"gender,omitempty" json:"gender,omitempty"`
 	UpdatedAt *time.Time
 	CreatedAt *time.Time
 	// if you want you can add more information
 }
 
+type PaginationPeople struct {
+	TotalCount *int
+	People     []*Person
+}
+
 func (p *Person) Create(ctx context.Context) error {
 	return database.RunQuery(
 		ctx,
-		"INSERT INTO people (name, gender) VALUES ($1, $2);",
-		[]interface{}{*p.Name, *p.Gender},
+		"INSERT INTO people (name, gender) VALUES ($1, $2)",
+		[]interface{}{p.Name, p.Gender},
 	)
 }
 
 func (p *Person) Update(ctx context.Context) error {
 	return database.RunQuery(
 		ctx,
-		"UPDATE people SET name=$1, gender=$2, updated_at=NOW() WHERE id=$3;",
-		[]interface{}{*p.Name, *p.Gender, *p.ID},
+		"UPDATE people SET name=$1, gender=$2, updated_at=NOW() WHERE id=$3",
+		[]interface{}{p.Name, p.Gender, p.ID},
 	)
 }
 
@@ -46,8 +51,8 @@ func (p *Person) Update(ctx context.Context) error {
 func (p *Person) Delete(ctx context.Context) error {
 	return database.RunQuery(
 		ctx,
-		"DELETE FROM people WHERE id=$1;",
-		[]interface{}{*p.ID},
+		"DELETE FROM people WHERE id=$1",
+		[]interface{}{p.ID},
 	)
 }
 
@@ -72,21 +77,25 @@ func ReadPersonByID(ctx context.Context, id *int) *Person {
 func ReadPeople(
 	ctx context.Context,
 	paginationQuery *utils.PaginationQuery,
-) []*Person {
+) *PaginationPeople {
 	query := "SELECT id, name, gender, updated_at, created_at FROM people "
 	queryOrder := " ORDER BY "
 	queryPagination := " LIMIT %d OFFSET %d"
 	queryCondition := " WHERE"
 	queryOR := " OR"
+	countQuery := "SELECT COUNT(id) FROM people"
 
 	if len(paginationQuery.Filter) > 0 {
 		query += queryCondition
+		countQuery += queryCondition
 	}
 	index := 1
 	for field, serchQuery := range paginationQuery.Filter {
-		query += fmt.Sprintf(" %s = '%s'", field, serchQuery)
+		query += serchQuery.DBQueryBuilder(field)
+		countQuery += serchQuery.DBQueryBuilder(field)
 		if index != len(paginationQuery.Filter) {
 			query += queryOR
+			countQuery += queryOR
 		}
 		index++
 	}
@@ -94,15 +103,18 @@ func ReadPeople(
 	query += queryOrder
 	if _, exists := paginationQuery.Sort["updated_at"]; !exists {
 		query += "updated_at DESC"
+		if len(paginationQuery.Sort) > 0 {
+			query += ", "
+		}
 	}
 	index = 1
 	for field, order := range paginationQuery.Sort {
 		// you can sanitize here
 		switch order {
 		case "asc":
-			query += fmt.Sprintf("%s %s", field, "ASC")
+			query += fmt.Sprintf(" %s %s", field, "ASC")
 		case "desc":
-			query += fmt.Sprintf("%s %s", field, "DESC")
+			query += fmt.Sprintf(" %s %s", field, "DESC")
 		}
 		if index != len(paginationQuery.Sort) {
 			query += ", "
@@ -127,5 +139,21 @@ func ReadPeople(
 		},
 	)
 
-	return people
+	count := database.RunSelectQuery(
+		ctx,
+		countQuery,
+		func(row *sql.Row) (*int, error) {
+			var count int
+			err := row.Scan(&count)
+			if err != nil {
+				return nil, err
+			}
+			return &count, nil
+		},
+	)
+
+	return &PaginationPeople{
+		TotalCount: count,
+		People:     people,
+	}
 }

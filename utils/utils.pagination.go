@@ -12,10 +12,28 @@ const (
 	DEFAULT_PAGINATION_SIZE int = 10
 )
 
+type Filter struct {
+	Operator string
+	Value    string
+}
+
+func (f *Filter) DBQueryBuilder(field string) string {
+	switch f.Operator {
+	case "match":
+		return fmt.Sprintf(" %s ILIKE '%%%s%%'", field, f.Value)
+	case "similar":
+		return fmt.Sprintf(" similarity(%s, '%s') > 0.3", field, f.Value)
+	case "eql":
+		return fmt.Sprintf(" %s = '%s'", field, f.Value)
+	default:
+		return fmt.Sprintf(" %s = '%s'", field, f.Value)
+	}
+}
+
 type PaginationQuery struct {
 	Page   int `query:"page"`
 	Size   int `query:"size"`
-	Filter map[string]string
+	Filter map[string]Filter
 	Sort   map[string]string
 }
 
@@ -23,7 +41,7 @@ func NewPaginationQuery() PaginationQuery {
 	return PaginationQuery{
 		Page:   0,
 		Size:   0,
-		Filter: make(map[string]string),
+		Filter: make(map[string]Filter),
 		Sort:   make(map[string]string),
 	}
 }
@@ -39,8 +57,16 @@ func (p *PaginationQuery) Parse(c *fiber.Ctx) error {
 	for key, value := range queries {
 		switch {
 		case strings.HasPrefix(key, "filter["):
-			field := key[len("filter[") : len(key)-1]
-			p.Filter[field] = value
+			fields := key[len("filter[") : len(key)-1]
+			if strings.Contains(fields, ":") && value != "" {
+				fieldArr := strings.Split(fields, ":")
+				if len(fieldArr) >= 2 {
+					p.Filter[fieldArr[0]] = Filter{
+						Operator: fieldArr[1],
+						Value:    value,
+					}
+				}
+			}
 		case strings.HasPrefix(key, "sort["):
 			field := key[len("sort[") : len(key)-1]
 			p.Sort[field] = value
@@ -61,7 +87,7 @@ func (p *PaginationQuery) Encode() string {
 	}
 
 	for field, value := range p.Filter {
-		params = append(params, fmt.Sprintf("filter[%s]=%s", field, value))
+		params = append(params, fmt.Sprintf("filter[%s:%s]=%s", field, value.Operator, value.Value))
 	}
 
 	for field, value := range p.Sort {
@@ -72,23 +98,23 @@ func (p *PaginationQuery) Encode() string {
 }
 
 func (p *PaginationQuery) FilterQuery() string {
-	query := ""
+	params := make([]string, 0)
 
 	for field, value := range p.Filter {
-		query += fmt.Sprintf("filter[%s]=%s", field, value)
+		params = append(params, fmt.Sprintf("filter[%s:%s]=%s", field, value.Operator, value.Value))
 	}
 
-	return query
+	return strings.Join(params, "&")
 }
 
 func (p *PaginationQuery) SortQuery() string {
-	query := ""
+	params := make([]string, 0)
 
 	for field, value := range p.Sort {
-		query += fmt.Sprintf("sort[%s]=%s", field, value)
+		params = append(params, fmt.Sprintf("sort[%s]=%s", field, value))
 	}
 
-	return query
+	return strings.Join(params, "&")
 }
 
 func CalculatePaginationPages(totalCount, size int) int {

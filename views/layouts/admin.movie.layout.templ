@@ -1,6 +1,9 @@
 package layouts
 
 import (
+	"fmt"
+	"github.com/ShuaibKhan786/mystreams/models"
+	"github.com/ShuaibKhan786/mystreams/utils"
 	"github.com/ShuaibKhan786/mystreams/views/components/button"
 	"github.com/ShuaibKhan786/mystreams/views/components/card"
 	"github.com/ShuaibKhan786/mystreams/views/components/dropdown"
@@ -25,7 +28,7 @@ templ AdminMovieLayout() {
 					"hx-swap":     "innerHTML",
 				},
 			}) {
-				Create 
+				Create
 			}
 		</section>
 	}
@@ -59,22 +62,24 @@ templ AdminMovieCreateLayout() {
 		}) {
 			<form
 				x-data="{
-						roles: [], 
-						name: '', role_type: '', character: '',
+						roles: [],
+						genres: [],
+						name: '', role_type: '', character: '', genre: '',
 					}"
 				@update-person.window="name = $event.detail"
 				@update-role-type.window="role_type = $event.detail"
+				@update-genre.window="genre = $event.detail"
 				hx-post="/admin/movies"
 				hx-target="this"
 				hx-swap="none"
-				:hx-vals="JSON.stringify({json_data: { roles: roles}})"
+				:hx-vals="JSON.stringify({json_data: { roles: roles, genres: genres}})"
 				class="flex flex-col gap-3"
 			>
 				// movie section
 				<section class="flex flex-col gap-3">
 					<h2 class="text-base font-semibold">Movie</h2>
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-						@label.Label(label.Props{Label: "Title"}) {
+						@label.Label(label.Props{Label: "Title", Required: true}) {
 							@input.Input(input.Props{
 								Name: "title", Type: "text", Placeholder: "eg: Interstellar, Oppenheimer",
 							})
@@ -84,13 +89,13 @@ templ AdminMovieCreateLayout() {
 								Name: "description", Type: "text", Placeholder: "movie description",
 							})
 						}
-						@label.Label(label.Props{Label: "Release Year"}) {
+						@label.Label(label.Props{Label: "Release Year", Required: true}) {
 							// decide wether you would take full date or time or so
 							@input.Input(input.Props{
 								Name: "year", Type: "text", Placeholder: "eg: 2025, 2028",
 							})
 						}
-						@label.Label(label.Props{Label: "Quality"}) {
+						@label.Label(label.Props{Label: "Quality", Required: true}) {
 							@dropdown.Dropdown(dropdown.Props{
 								Name: "quality", Label: "Quality",
 							}) {
@@ -98,16 +103,69 @@ templ AdminMovieCreateLayout() {
 								@dropdown.DropdownItem(dropdown.ItemProps{Label: "CAM", Value: "cam"})
 							}
 						}
-						@label.Label(label.Props{Label: "Runtime in minutes"}) {
+						@label.Label(label.Props{Label: "Runtime in minutes", Required: true}) {
 							@input.Input(input.Props{
 								Name: "runtime", Type: "text", Placeholder: "eg: 198m, 123m",
 							})
 						}
-						@label.Label(label.Props{Label: "County"}) {
+						@label.Label(label.Props{Label: "County", Required: true}) {
 							@input.Input(input.Props{
 								Name: "country", Type: "text", Placeholder: "eg: USA, India",
 							})
 						}
+					</div>
+				</section>
+				// genre section
+				<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_auto_3fr] gap-3.5 items-end">
+					@label.Label(label.Props{Label: "Genre", Required: true}) {
+						@dropdown.Dropdown(dropdown.Props{
+							Label: "Choose genre",
+							Attributes: templ.Attributes{
+								"hx-get":     "/admin/genres/list?partial=true&mode=select&page=1&size=10",
+								"hx-trigger": "click once",
+								"hx-target":  "#genres-list-container",
+								"hx-swap":    "outerHTML",
+							},
+						}) {
+							// paginated result
+							@input.Input(input.Props{
+								Name: "filter[name:similar]", Type: "text", Placeholder: "search person",
+								Attributes: templ.Attributes{
+									"hx-get":     "/admin/genres/list?partial=true&mode=select&page=1&size=10",
+									"hx-trigger": "keyup changed delay:500ms",
+									"hx-target":  "#genres-list-container",
+									"hx-swap":    "outerHTML",
+								},
+								Class: " mb-2",
+							})
+							<div id="genres-list-container"></div>
+						}
+					}
+					@button.Button(button.Props{
+						Outline: true,
+						Size:    button.Small,
+						Icon:    "fa-solid fa-plus text-sm",
+						Attributes: templ.Attributes{
+							"type":   "button",
+							"@click": `if (genre !== "") { genres.push({ genre });}`,
+						},
+					}) {
+						Add genre
+					}
+					<div class="inline-flex gap-1.5">
+						<template x-for="(g, index) in [...genres].slice().reverse()" :key="index">
+							<div class="flex gap-1.5 text-sm items-center bg-[#fafafa] dark:bg-[#171717] px-2 py-1.5 rounded-lg">
+								<span x-text="g.genre"></span>
+								@button.Button(button.Props{
+									Icon: "fa-solid fa-xmark",
+									Size: button.None,
+									Attributes: templ.Attributes{
+										"type":   "button",
+										"@click": "genres.splice((genres.length-index-1), 1)",
+									},
+								})
+							</div>
+						</template>
 					</div>
 				</section>
 				// role, person section
@@ -115,19 +173,31 @@ templ AdminMovieCreateLayout() {
 				<section class="flex flex-col gap-3">
 					<h2 class="text-base font-semibold">Movie Role</h2>
 					<div class="grid items-end grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
-						@label.Label(label.Props{Label: "Person"}) {
+						@label.Label(label.Props{Label: "Person", Required: true}) {
 							@dropdown.Dropdown(dropdown.Props{
 								Label: "Choose person",
+								Attributes: templ.Attributes{
+									"hx-get":     "/admin/people/list?partial=true&mode=select&page=1&size=10",
+									"hx-trigger": "click once",
+									"hx-target":  "#people-list-container",
+									"hx-swap":    "outerHTML",
+								},
 							}) {
 								// paginated result
-								@dropdown.DropdownItem(dropdown.ItemProps{Label: "Cast", Value: "cast", Bind: "person", Selected: true})
-								@dropdown.DropdownItem(dropdown.ItemProps{Label: "Director", Value: "director", Bind: "person"})
-								@dropdown.DropdownItem(dropdown.ItemProps{Label: "Producer", Value: "producer", Bind: "person"})
-								@dropdown.DropdownItem(dropdown.ItemProps{Label: "Writer", Value: "writer", Bind: "person"})
-								@dropdown.DropdownItem(dropdown.ItemProps{Label: "Crew", Value: "crew", Bind: "person"})
+								@input.Input(input.Props{
+									Name: "filter[name:similar]", Type: "text", Placeholder: "search person",
+									Attributes: templ.Attributes{
+										"hx-get":     "/admin/people/list?partial=true&mode=select&page=1&size=10",
+										"hx-trigger": "keyup changed delay:500ms",
+										"hx-target":  "#people-list-container",
+										"hx-swap":    "outerHTML",
+									},
+									Class: " mb-2",
+								})
+								<div id="people-list-container"></div>
 							}
 						}
-						@label.Label(label.Props{Label: "Role Type"}) {
+						@label.Label(label.Props{Label: "Role Type", Required: true}) {
 							@dropdown.Dropdown(dropdown.Props{
 								Label: "Choose role type",
 							}) {
@@ -156,23 +226,23 @@ templ AdminMovieCreateLayout() {
 								"@click": `if (name !== "" && role_type !== "") { roles.push({ name, role_type, character });}`,
 							},
 						}) {
-							Add role 
+							Add role
 						}
 					</div>
 					<template x-if="roles.length">
 						@table.Table() {
 							@table.TableHeader() {
 								@table.TableHead() {
-									Person 
+									Person
 								}
 								@table.TableHead() {
-									Producer 
+									Producer
 								}
 								@table.TableHead() {
-									Superman 
+									Superman
 								}
 								@table.TableHead() {
-									Action 
+									Action
 								}
 							}
 							@table.TableBody() {
@@ -212,4 +282,42 @@ templ AdminMovieCreateLayout() {
 			</form>
 		}
 	}
+}
+
+templ MovieSelectPeopleListLayout(people []*models.Person) {
+	<div
+		id="people-list-container"
+		class="
+		min-w-full p-1.5 flex flex-col
+		rounded-lg border-[#e5e5e5] dark:border-[#ffffff1a]
+		bg-[#f9fafb] dark:bg-[#18181b]
+		"
+	>
+		for _, person := range people {
+			@dropdown.DropdownItem(dropdown.ItemProps{
+				Label: utils.SanitizeNilPointerUI(person.Name),
+				Value: fmt.Sprintf("%d", utils.SanitizeNilPointer(person.ID)),
+				Bind:  "person",
+			})
+		}
+	</div>
+}
+
+templ MovieSelectGenreListLayout(genres []*models.Genre) {
+	<div
+		id="genres-list-container"
+		class="
+		min-w-full p-1.5 flex flex-col
+		rounded-lg border-[#e5e5e5] dark:border-[#ffffff1a]
+		bg-[#f9fafb] dark:bg-[#18181b]
+		"
+	>
+		for _, genre := range genres {
+			@dropdown.DropdownItem(dropdown.ItemProps{
+				Label: utils.SanitizeNilPointerUI(genre.Name),
+				Value: fmt.Sprintf("%d", utils.SanitizeNilPointer(genre.ID)),
+				Bind:  "genre",
+			})
+		}
+	</div>
 }

@@ -40,7 +40,7 @@ func Navbar(props ...NavbarProps) templ.Component {
 		}
 		style := `
         w-full
-        flex items-center justify-between gap-1.5 
+        flex items-center justify-between gap-1.5
         `
 		style += p.Class
 		var templ_7745c5c3_Var2 = []any{style}

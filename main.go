@@ -57,6 +57,8 @@ func main() {
 	adminGenres := admin.Group("/genres", middlewares.AddHTMLResHeader)
 	adminGenres.Get("/", handlers.AdminGenrePage)
 	adminGenres.Get("/new", handlers.AdminGenreCreateModal)
+	adminGenres.Get("/:id/edit", handlers.AdminGenreEditModal)
+	adminGenres.Get("/:id/remove", handlers.AdminGenreRemoveModal)
 	adminGenres.Get("/list", handlers.AdminListGenre)
 	adminGenres.Post("/", handlers.AdminCreateGenre)
 	adminGenres.Get("/:id", handlers.AdminGetGenre)
